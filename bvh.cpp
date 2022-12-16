@@ -25,7 +25,7 @@ static void bvh(std::vector<Triangle>::iterator begin, std::vector<Triangle>::it
     Vector4 upper = Vector4(-1 * std::numeric_limits<float>::infinity());
     Vector4 lower = Vector4(std::numeric_limits<float>::infinity());
 
-    for (auto& it = begin; it != end; ++it) {
+    for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
         for (int i = 0; i < 3; i++) {
             upper = upper.max(it->vertices[i]);
             lower = lower.min(it->vertices[i]);
