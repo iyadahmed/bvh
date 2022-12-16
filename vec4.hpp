@@ -23,6 +23,7 @@ union Vector4 {
         : x(values[0])
         , y(values[1])
         , z(values[2])
+        , w(0.0f)
     {
     }
 
