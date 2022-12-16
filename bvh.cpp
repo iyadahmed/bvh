@@ -50,6 +50,10 @@ static void bvh(std::vector<Triangle>::iterator begin, std::vector<Triangle>::it
         return t.calc_centroid()[split_axis] < split_pos;
     });
 
+    if ((middle == begin) || (middle == end)) {
+        return;
+    }
+
     bvh(begin, middle);
     bvh(middle, end);
 }
