@@ -1,3 +1,4 @@
+#include <algorithm> // for std::partition
 #include <iostream>
 #include <limits>
 #include <stdio.h>
@@ -9,6 +10,11 @@
 
 struct Triangle {
     Vector4 vertices[3];
+
+    Vector4 calc_centroid() const
+    {
+        return (vertices[0] + vertices[1] + vertices[2]) / 3;
+    }
 };
 
 static void bvh(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end)
@@ -26,10 +32,26 @@ static void bvh(std::vector<Triangle>::iterator begin, std::vector<Triangle>::it
         }
     }
 
-    std::cout << upper.x << " " << upper.y << " " << upper.z << std::endl;
-    std::cout << lower.x << " " << lower.y << " " << lower.z << std::endl;
+    Vector4 dims = upper - lower;
 
-    // TODO: recursively parition the triangles vector, and store nodes
+    int split_axis = 0;
+
+    if (dims[1] > dims[0]) {
+        split_axis = 1;
+    }
+
+    if (dims[2] > dims[split_axis]) {
+        split_axis = 2;
+    }
+
+    float split_pos = lower[split_axis] + dims[split_axis] * 0.5f;
+
+    auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle& t) {
+        return t.calc_centroid()[split_axis] < split_pos;
+    });
+
+    bvh(begin, middle);
+    bvh(middle, end);
 }
 
 int main(int argc, char* argv[])
