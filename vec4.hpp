@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <immintrin.h>
 
 union Vector4 {
@@ -56,6 +57,16 @@ union Vector4 {
     Vector4 min(const Vector4& other) const
     {
         return _mm_min_ps(mm, other.mm);
+    }
+
+    float length3() const
+    {
+        return std::sqrt(x * x + y * y + z * z);
+    }
+
+    Vector4 normalized3() const
+    {
+        return (*this) / length3();
     }
 
     Vector4 operator*(const Vector4& other) const
