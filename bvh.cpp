@@ -40,7 +40,7 @@ union Triangle {
 struct Node {
     std::vector<Triangle>::iterator begin, end;
     Node *left = nullptr, *right = nullptr;
-    Vector4 upper, lower;
+    AABB aabb;
 
     Node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end)
     {
@@ -94,8 +94,8 @@ static void bvh(Node* parent)
 
     assert(begin < end);
 
-    Vector4& upper = parent->upper;
-    Vector4& lower = parent->lower;
+    Vector4& upper = parent->aabb.upper;
+    Vector4& lower = parent->aabb.lower;
 
     upper = Vector4(-1 * std::numeric_limits<float>::infinity());
     lower = Vector4(std::numeric_limits<float>::infinity());
@@ -140,10 +140,10 @@ static void bvh(Node* parent)
     bvh(right);
 }
 
-static bool intersect_ray_aabb(Vector4 O, Vector4 D, Vector4 upper, Vector4 lower, float t_limit)
+static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float t_limit)
 {
-    Vector4 t_upper = (upper - O) / D;
-    Vector4 t_lower = (lower - O) / D;
+    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
+    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
 
     float t_min = std::min(t_upper[0], t_lower[0]);
     float t_max = std::max(t_upper[0], t_lower[0]);
@@ -156,16 +156,16 @@ static bool intersect_ray_aabb(Vector4 O, Vector4 D, Vector4 upper, Vector4 lowe
     return t_max >= t_min && t_min < t_limit && t_max > 0;
 }
 
-static bool intersect_ray_bvh(Vector4 O, Vector4 D, Node* node, float t_limit)
+static bool intersect_ray_bvh(const Ray& ray, Node* node, float t_limit)
 {
-    if (!intersect_ray_aabb(O, D, node->upper, node->lower, t_limit)) {
+    if (!intersect_ray_aabb(ray, node->aabb, t_limit)) {
         return false;
     }
 
     if (node->is_leaf()) {
         return true;
     } else {
-        return intersect_ray_bvh(O, D, node->left, t_limit) || intersect_ray_bvh(O, D, node->right, t_limit);
+        return intersect_ray_bvh(ray, node->left, t_limit) || intersect_ray_bvh(ray, node->right, t_limit);
     }
 }
 
@@ -222,7 +222,7 @@ int main(int argc, char* argv[])
     // Raytrace
     Vector4 cam_pos(0, 0, -18);
     Vector4 p0(-1, 1, -15), p1(1, 1, -15), p2(-1, -1, -15);
-    Vector4 O, D;
+    Ray ray;
 
     int image_width = 1280;
     int image_height = 720;
@@ -234,10 +234,10 @@ int main(int argc, char* argv[])
     for (int y = 0; y < image_height; y++) {
         for (int x = 0; x < image_width; x++) {
             Vector4 pixel_pos = p0 + (p1 - p0) * (x / (float)image_width) + (p2 - p0) * (y / (float)image_height);
-            O = cam_pos;
-            D = (pixel_pos - O).normalized3();
+            ray.O = cam_pos;
+            ray.D = (pixel_pos - ray.O).normalized3();
 
-            if (intersect_ray_bvh(O, D, root, std::numeric_limits<float>::infinity())) {
+            if (intersect_ray_bvh(ray, root, std::numeric_limits<float>::infinity())) {
                 fprintf(image, "255 255 255 ");
             } else {
                 fprintf(image, "0 0 0 ");
