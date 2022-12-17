@@ -17,23 +17,12 @@ struct Ray {
     Vector4 O, D;
 };
 
-union Triangle {
+struct Triangle {
     Vector4 vertices[3];
-    struct {
-        Vector4 a, b, c;
-    };
 
     Vector4 calc_centroid() const
     {
         return (vertices[0] + vertices[1] + vertices[2]) / 3;
-    }
-
-    AABB calc_aabb() const
-    {
-        AABB res;
-        res.upper = a.max(b).max(c);
-        res.lower = a.min(b).min(c);
-        return res;
     }
 };
 
@@ -195,10 +184,10 @@ int main(int argc, char* argv[])
 
     std::vector<Triangle> tris;
 
-     //STL_Mesh_IO::Triangle t;
-     //while (reader->read_next_triangle(&t)) {
-     //    tris.push_back({ t.vertices[0], t.vertices[1], t.vertices[2] });
-     //}
+    // STL_Mesh_IO::Triangle t;
+    // while (reader->read_next_triangle(&t)) {
+    //     tris.push_back({ t.vertices[0], t.vertices[1], t.vertices[2] });
+    // }
 
     // std::cout << "Number of triangles: " << tris.size() << std::endl;
 
