@@ -69,6 +69,16 @@ union Vector4 {
         return (*this) / length3();
     }
 
+    Vector4 cross3(const Vector4& other) const
+    {
+        return { (y * other.z - z * other.y), (z * other.x - x * other.z), (x * other.y - y * other.x) };
+    }
+
+    float dot3(const Vector4& other) const
+    {
+        return x * other.x + y * other.y + z * other.z;
+    }
+
     Vector4 operator*(const Vector4& other) const
     {
         return _mm_mul_ps(mm, other.mm);

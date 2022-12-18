@@ -145,6 +145,28 @@ static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float t_limit)
     return t_max >= t_min && t_min < t_limit && t_max > 0;
 }
 
+static bool intersect_ray_triangle(const Ray& ray, const Triangle& tri)
+{
+    const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
+    const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
+    const Vector4 h = ray.D.cross3(edge2);
+    const float a = edge1.dot3(h);
+    if (a > -0.0001f && a < 0.0001f)
+        return false; // ray parallel to triangle
+    const float f = 1 / a;
+    const Vector4 s = ray.O - tri.vertices[0];
+    const float u = f * s.dot3(h);
+    if (u < 0 || u > 1)
+        return false;
+    const Vector4 q = s.cross3(edge1);
+    const float v = f * ray.D.dot3(q);
+    if (v < 0 || u + v > 1)
+        return false;
+    const float t = f * edge2.dot3(q);
+
+    return t > 0.0001f;
+}
+
 static bool intersect_ray_bvh(const Ray& ray, Node* node, float t_limit)
 {
     if (!intersect_ray_aabb(ray, node->aabb, t_limit)) {
@@ -152,7 +174,12 @@ static bool intersect_ray_bvh(const Ray& ray, Node* node, float t_limit)
     }
 
     if (node->is_leaf()) {
-        return true;
+        for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
+            if (intersect_ray_triangle(ray, *it)) {
+                return true;
+            }
+        }
+        return false;
     } else {
         return intersect_ray_bvh(ray, node->left, t_limit) || intersect_ray_bvh(ray, node->right, t_limit);
     }
