@@ -133,13 +133,15 @@ static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float t_limit)
 {
     Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
     Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
+    Vector4 t_min_v = t_upper.min(t_lower);
+    Vector4 t_max_v = t_upper.max(t_lower);
 
-    float t_min = std::min(t_upper[0], t_lower[0]);
-    float t_max = std::max(t_upper[0], t_lower[0]);
+    float t_min = t_min_v[0];
+    float t_max = t_max_v[0];
 
     for (int i = 1; i < 3; i++) {
-        t_min = std::max(t_min, std::min(t_upper[i], t_lower[i]));
-        t_max = std::min(t_max, std::max(t_upper[i], t_lower[i]));
+        t_min = std::max(t_min, t_min_v[i]);
+        t_max = std::min(t_max, t_max_v[i]);
     }
 
     return t_max >= t_min && t_min < t_limit && t_max > 0;
