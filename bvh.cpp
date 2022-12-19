@@ -97,6 +97,13 @@ static void bvh(Node* parent)
         }
     }
 
+    // Expand bounding box by an epsilon;
+    // fixes an issue where rays that are tangent to the bounding box miss,
+    // hopefully this does not strike back and need extra margins in future,
+    // P.S.: this is probably related to numeric precision of instrinsics and order of floating-point operations
+    upper = upper + Vector4(std::numeric_limits<float>::epsilon());
+    lower = lower - Vector4(std::numeric_limits<float>::epsilon());
+
     Vector4 dims = upper - lower;
 
     int split_axis = 0;
