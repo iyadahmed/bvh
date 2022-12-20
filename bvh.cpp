@@ -136,7 +136,7 @@ static void bvh(Node* parent)
     bvh(right);
 }
 
-static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float t_limit)
+static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
 {
     Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
     Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
@@ -151,10 +151,10 @@ static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float t_limit)
         t_max = std::min(t_max, t_max_v[i]);
     }
 
-    return t_max >= t_min && t_min < t_limit && t_max > 0;
+    return t_max >= t_min && t_min < std::numeric_limits<float>::max() && t_max > 0;
 }
 
-static bool intersect_ray_triangle(const Ray& ray, const Triangle& tri)
+static bool intersect_ray_triangle(const Ray& ray, const Triangle& tri, float* t_out)
 {
     const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
     const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
@@ -172,25 +172,26 @@ static bool intersect_ray_triangle(const Ray& ray, const Triangle& tri)
     if (v < 0 || u + v > 1)
         return false;
     const float t = f * edge2.dot3(q);
-
+    *t_out = t;
     return t > 0.0001f;
 }
 
-static bool intersect_ray_bvh(const Ray& ray, Node* node, float t_limit)
+static void intersect_ray_bvh(const Ray& ray, Node* node, float* t_min)
 {
-    if (!intersect_ray_aabb(ray, node->aabb, t_limit)) {
-        return false;
+    if (!intersect_ray_aabb(ray, node->aabb)) {
+        return;
     }
 
     if (node->is_leaf()) {
         for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
-            if (intersect_ray_triangle(ray, *it)) {
-                return true;
+            float temp = 0.0f;
+            if (intersect_ray_triangle(ray, *it, &temp)) {
+                *t_min = std::min(*t_min, temp);
             }
         }
-        return false;
     } else {
-        return intersect_ray_bvh(ray, node->left, t_limit) || intersect_ray_bvh(ray, node->right, t_limit);
+        intersect_ray_bvh(ray, node->left, t_min);
+        intersect_ray_bvh(ray, node->right, t_min);
     }
 }
 
@@ -212,45 +213,63 @@ Vector4 random_vec3()
 int main(int argc, char* argv[])
 {
     if (argc != 2) {
-        puts("Expected arguments: mesh.stl");
+        puts("Expected arguments: mesh.tri");
         return 1;
     }
 
-    auto reader = STL_Mesh_IO::create_reader(argv[1]);
+    const char* filepath = argv[1];
 
     std::vector<Triangle> tris;
 
+    // Loads an STL mesh
+    // auto reader = STL_Mesh_IO::create_reader(filepath);
     // STL_Mesh_IO::Triangle t;
     // while (reader->read_next_triangle(&t)) {
     //     tris.push_back({ t.vertices[0], t.vertices[1], t.vertices[2] });
     // }
-
     // std::cout << "Number of triangles: " << tris.size() << std::endl;
 
-    int N = 100;
+    // Generates random triangles
+    // int N = 100;
+    // for (int i = 0; i < N; i++) {
+    //     Vector4 r0 = random_vec3();
+    //     Vector4 r1 = random_vec3();
+    //     Vector4 r2 = random_vec3();
+    //     Triangle t {};
+    //     t.vertices[0] = r0 * 9 - Vector4(5);
+    //     t.vertices[1] = t.vertices[0] + r1;
+    //     t.vertices[2] = t.vertices[0] + r2;
+    //     tris.push_back(t);
+    // }
 
-    for (int i = 0; i < N; i++) {
-        Vector4 r0 = random_vec3();
-        Vector4 r1 = random_vec3();
-        Vector4 r2 = random_vec3();
-        Triangle t {};
-        t.vertices[0] = r0 * 9 - Vector4(5);
-        t.vertices[1] = t.vertices[0] + r1;
-        t.vertices[2] = t.vertices[0] + r2;
-        tris.push_back(t);
+    // Loads .tri mesh file
+    FILE* file = fopen(filepath, "r");
+    if (file == NULL) {
+        throw std::runtime_error("Failed to open file");
     }
+    float a, b, c, d, e, f, g, h, i;
+    while (fscanf(file, "%f %f %f %f %f %f %f %f %f\n",
+               &a, &b, &c, &d, &e, &f, &g, &h, &i)
+        == 9) {
+        Vector4 v1(a, b, c);
+        Vector4 v2(d, e, f);
+        Vector4 v3(g, h, i);
+        tris.push_back({ v1, v2, v3 });
+    }
+    fclose(file);
 
     Node* root = new Node(tris.begin(), tris.end());
     bvh(root);
     assert(count_leaf_triangles(root) == tris.size());
 
     // Raytrace
-    Vector4 cam_pos(0, 0, -18);
-    Vector4 p0(-1, 1, -15), p1(1, 1, -15), p2(-1, -1, -15);
+    Vector4 cam_pos(-1.5f, -0.2f, -2.5);
+    Vector4 p0(-1, 1, 2), p1(1, 1, 2), p2(-1, -1, 2);
     Ray ray;
 
-    int image_width = 1280;
-    int image_height = 720;
+    // TODO: support non square aspect ratio
+    int image_width = 640;
+    int image_height = 640;
 
     FILE* image = fopen("raytrace.ppm", "wb");
     fputs("P3", image); // "P3" means this is an RGB PPM color image in ASCII
@@ -258,12 +277,16 @@ int main(int argc, char* argv[])
 
     for (int y = 0; y < image_height; y++) {
         for (int x = 0; x < image_width; x++) {
-            Vector4 pixel_pos = p0 + (p1 - p0) * (x / (float)image_width) + (p2 - p0) * (y / (float)image_height);
             ray.O = cam_pos;
+            Vector4 pixel_pos = ray.O + p0 + (p1 - p0) * (x / (float)image_width) + (p2 - p0) * (y / (float)image_height);
             ray.D = (pixel_pos - ray.O).normalized3();
 
-            if (intersect_ray_bvh(ray, root, std::numeric_limits<float>::infinity())) {
-                fprintf(image, "255 255 255 ");
+            float t_min = std::numeric_limits<float>::max();
+            intersect_ray_bvh(ray, root, &t_min);
+
+            if (t_min < std::numeric_limits<float>::max()) {
+                unsigned char c = 500 - (int)(t_min * 42);
+                fprintf(image, "%u %u %u ", c, c, c);
             } else {
                 fprintf(image, "0 0 0 ");
             }
