@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <vector>
 
+#include <SDL.h>
 #include <tiny_stl/tiny_stl.hpp>
 
 #include "vec4.hpp"
@@ -267,18 +268,51 @@ int main(int argc, char* argv[])
     Vector4 p0(-1, 1, 2), p1(1, 1, 2), p2(-1, -1, 2);
     Ray ray;
 
-    // TODO: support non square aspect ratio
-    int image_width = 640;
-    int image_height = 640;
+    // Render to image
+    // int image_width = 640;
+    // int image_height = 640;
 
-    FILE* image = fopen("raytrace.ppm", "wb");
-    fputs("P3", image); // "P3" means this is an RGB PPM color image in ASCII
-    fprintf(image, "%d %d 255\n", image_width, image_height);
+    // FILE* image = fopen("raytrace.ppm", "wb");
+    // fputs("P3", image); // "P3" means this is an RGB PPM color image in ASCII
+    // fprintf(image, "%d %d 255\n", image_width, image_height);
 
-    for (int y = 0; y < image_height; y++) {
-        for (int x = 0; x < image_width; x++) {
+    // for (int y = 0; y < image_height; y++) {
+    //     for (int x = 0; x < image_width; x++) {
+    //         ray.O = cam_pos;
+    //         Vector4 pixel_pos = ray.O + p0 + (p1 - p0) * (x / (float)image_width) + (p2 - p0) * (y / (float)image_height);
+    //         ray.D = (pixel_pos - ray.O).normalized3();
+
+    //        float t_min = std::numeric_limits<float>::max();
+    //        intersect_ray_bvh(ray, root, &t_min);
+
+    //        if (t_min < std::numeric_limits<float>::max()) {
+    //            unsigned char c = 500 - (int)(t_min * 42);
+    //            fprintf(image, "%u %u %u ", c, c, c);
+    //        } else {
+    //            fprintf(image, "0 0 0 ");
+    //        }
+    //    }
+    //}
+
+    // fclose(image);
+
+    SDL_Event event;
+    SDL_Renderer* renderer;
+    SDL_Window* window;
+
+    // FIXME: support non square aspect ratio
+    constexpr int WINDOW_WIDTH = 640;
+    constexpr int WINDOW_HEIGHT = 640;
+
+    SDL_Init(SDL_INIT_VIDEO);
+    SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    for (int y = 0; y < WINDOW_HEIGHT; y++) {
+        for (int x = 0; x < WINDOW_WIDTH; x++) {
             ray.O = cam_pos;
-            Vector4 pixel_pos = ray.O + p0 + (p1 - p0) * (x / (float)image_width) + (p2 - p0) * (y / (float)image_height);
+            Vector4 pixel_pos = ray.O + p0 + (p1 - p0) * (x / (float)WINDOW_WIDTH) + (p2 - p0) * (y / (float)WINDOW_HEIGHT);
             ray.D = (pixel_pos - ray.O).normalized3();
 
             float t_min = std::numeric_limits<float>::max();
@@ -286,16 +320,25 @@ int main(int argc, char* argv[])
 
             if (t_min < std::numeric_limits<float>::max()) {
                 unsigned char c = 500 - (int)(t_min * 42);
-                fprintf(image, "%u %u %u ", c, c, c);
+                SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+                SDL_RenderDrawPoint(renderer, x, y);
             } else {
-                fprintf(image, "0 0 0 ");
+                // TODO: draw background, sky, or do nothing
             }
         }
     }
 
-    fclose(image);
-
     free_tree(root);
+
+    SDL_RenderPresent(renderer);
+    while (1) {
+        if (SDL_PollEvent(&event) && event.type == SDL_QUIT) {
+            break;
+        }
+    }
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
     return 0;
 }
