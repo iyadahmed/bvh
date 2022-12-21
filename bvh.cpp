@@ -91,12 +91,15 @@ static void bvh(Node* parent)
     lower = Vector4(std::numeric_limits<float>::infinity());
 
     // TODO: calculate variance and split triangles along axis of greatest variance
+    Vector4 mean(0.0f);
+    Vector4 mean_of_squares(0.0f);
     for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
         for (int i = 0; i < 3; i++) {
             upper = upper.max(it->vertices[i]);
             lower = lower.min(it->vertices[i]);
         }
     }
+    Vector4 variance = mean_of_squares - mean * mean;
 
     // Expand bounding box by an epsilon;
     // fixes an issue where rays that are tangent to the bounding box miss,
