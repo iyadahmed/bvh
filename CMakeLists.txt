@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(tiny_stl)
-add_executable(bvh "bvh.cpp" "vec4.hpp")
+add_executable(bvh "bvh.cpp" "bvh.hpp" "vec4.hpp")
 target_link_libraries(bvh PUBLIC tiny_stl SDL2::SDL2 SDL2::SDL2main)
 
 if(MSVC)
