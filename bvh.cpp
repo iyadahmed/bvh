@@ -16,6 +16,14 @@ struct AABB {
 
 struct Ray {
     Vector4 O, D;
+    float t;
+
+    Ray(Vector4 origin, Vector4 direction)
+    {
+        O = origin;
+        D = direction;
+        t = std::numeric_limits<float>::max();
+    }
 };
 
 struct Triangle {
@@ -162,32 +170,33 @@ static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
         t_max = std::min(t_max, t_max_v[i]);
     }
 
-    return t_max >= t_min && t_min < std::numeric_limits<float>::max() && t_max > 0;
+    return t_max >= t_min && t_min < ray.t && t_max > 0;
 }
 
-static bool intersect_ray_triangle(const Ray& ray, const Triangle& tri, float* t_out)
+static void intersect_ray_triangle(Ray& ray, const Triangle& tri)
 {
     const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
     const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
     const Vector4 h = ray.D.cross3(edge2);
     const float a = edge1.dot3(h);
     if (a > -0.0001f && a < 0.0001f)
-        return false; // ray parallel to triangle
+        return; // ray parallel to triangle
     const float f = 1 / a;
     const Vector4 s = ray.O - tri.vertices[0];
     const float u = f * s.dot3(h);
     if (u < 0 || u > 1)
-        return false;
+        return;
     const Vector4 q = s.cross3(edge1);
     const float v = f * ray.D.dot3(q);
     if (v < 0 || u + v > 1)
-        return false;
+        return;
     const float t = f * edge2.dot3(q);
-    *t_out = t;
-    return t > 0.0001f;
+    if (t > 0.0001f) {
+        ray.t = std::min(ray.t, t);
+    }
 }
 
-static void intersect_ray_bvh(const Ray& ray, Node* node, float* t_min)
+static void intersect_ray_bvh(Ray& ray, Node* node)
 {
     if (!intersect_ray_aabb(ray, node->aabb)) {
         return;
@@ -195,14 +204,11 @@ static void intersect_ray_bvh(const Ray& ray, Node* node, float* t_min)
 
     if (node->is_leaf()) {
         for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
-            float temp = 0.0f;
-            if (intersect_ray_triangle(ray, *it, &temp)) {
-                *t_min = std::min(*t_min, temp);
-            }
+            intersect_ray_triangle(ray, *it);
         }
     } else {
-        intersect_ray_bvh(ray, node->left, t_min);
-        intersect_ray_bvh(ray, node->right, t_min);
+        intersect_ray_bvh(ray, node->left);
+        intersect_ray_bvh(ray, node->right);
     }
 }
 
@@ -276,7 +282,6 @@ int main(int argc, char* argv[])
     // Raytrace
     Vector4 cam_pos(-1.5f, -0.2f, -2.5);
     Vector4 p0(-1, 1, 2), p1(1, 1, 2), p2(-1, -1, 2);
-    Ray ray;
 
     // Render to image
     // int image_width = 640;
@@ -321,15 +326,13 @@ int main(int argc, char* argv[])
 
     for (int y = 0; y < WINDOW_HEIGHT; y++) {
         for (int x = 0; x < WINDOW_WIDTH; x++) {
-            ray.O = cam_pos;
-            Vector4 pixel_pos = ray.O + p0 + (p1 - p0) * (x / (float)WINDOW_WIDTH) + (p2 - p0) * (y / (float)WINDOW_HEIGHT);
-            ray.D = (pixel_pos - ray.O).normalized3();
+            Vector4 pixel_pos = cam_pos + p0 + (p1 - p0) * (x / (float)WINDOW_WIDTH) + (p2 - p0) * (y / (float)WINDOW_HEIGHT);
+            Ray ray(cam_pos, (pixel_pos - cam_pos).normalized3());
 
-            float t_min = std::numeric_limits<float>::max();
-            intersect_ray_bvh(ray, root, &t_min);
+            intersect_ray_bvh(ray, root);
 
-            if (t_min < std::numeric_limits<float>::max()) {
-                unsigned char c = 500 - (int)(t_min * 42);
+            if (ray.t < std::numeric_limits<float>::max()) {
+                unsigned char c = 500 - (int)(ray.t * 42);
                 SDL_SetRenderDrawColor(renderer, c, c, c, 255);
                 SDL_RenderDrawPoint(renderer, x, y);
             } else {
