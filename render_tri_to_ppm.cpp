@@ -70,5 +70,6 @@ int main(int argc, char* argv[])
     auto t2 = std::chrono::high_resolution_clock::now();
     std::cout << "Rendering took: " << (t2 - t1).count() / 1'000'000 << " milli seconds" << std::endl;
 
+    free_tree(root);
     fclose(image);
 }
