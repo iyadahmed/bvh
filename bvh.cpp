@@ -1,5 +1,6 @@
 #include <algorithm> // for std::partition, std::min/max
 #include <assert.h>
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <stdio.h>
@@ -324,6 +325,7 @@ int main(int argc, char* argv[])
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    auto t1 = std::chrono::high_resolution_clock::now();
     for (int y = 0; y < WINDOW_HEIGHT; y++) {
         for (int x = 0; x < WINDOW_WIDTH; x++) {
             Vector4 pixel_pos = cam_pos + p0 + (p1 - p0) * (x / (float)WINDOW_WIDTH) + (p2 - p0) * (y / (float)WINDOW_HEIGHT);
@@ -340,6 +342,8 @@ int main(int argc, char* argv[])
             }
         }
     }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "Rendering took: " << (t2 - t1).count() / 1'000'000 << " milli seconds" << std::endl;
 
     free_tree(root);
 
