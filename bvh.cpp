@@ -11,6 +11,8 @@
 
 #include "vec4.hpp"
 
+#define USE_ORDERED_TRAVERSAL 1
+
 struct AABB {
     Vector4 upper, lower;
 };
@@ -156,24 +158,6 @@ static void bvh(Node* parent)
     bvh(right);
 }
 
-static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
-{
-    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
-    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
-    Vector4 t_min_v = t_upper.min(t_lower);
-    Vector4 t_max_v = t_upper.max(t_lower);
-
-    float t_min = t_min_v[0];
-    float t_max = t_max_v[0];
-
-    for (int i = 1; i < 3; i++) {
-        t_min = std::max(t_min, t_min_v[i]);
-        t_max = std::min(t_max, t_max_v[i]);
-    }
-
-    return t_max >= t_min && t_min < ray.t && t_max > 0;
-}
-
 static void intersect_ray_triangle(Ray& ray, const Triangle& tri)
 {
     const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
@@ -197,6 +181,25 @@ static void intersect_ray_triangle(Ray& ray, const Triangle& tri)
     }
 }
 
+#if !USE_ORDERED_TRAVERSAL
+static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
+{
+    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
+    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
+    Vector4 t_min_v = t_upper.min(t_lower);
+    Vector4 t_max_v = t_upper.max(t_lower);
+
+    float t_min = t_min_v[0];
+    float t_max = t_max_v[0];
+
+    for (int i = 1; i < 3; i++) {
+        t_min = std::max(t_min, t_min_v[i]);
+        t_max = std::min(t_max, t_max_v[i]);
+    }
+
+    return t_max >= t_min && t_min < ray.t && t_max > 0;
+}
+
 static void intersect_ray_bvh(Ray& ray, Node* node)
 {
     if (!intersect_ray_aabb(ray, node->aabb)) {
@@ -212,6 +215,69 @@ static void intersect_ray_bvh(Ray& ray, Node* node)
         intersect_ray_bvh(ray, node->right);
     }
 }
+#else
+static float intersect_ray_aabb(const Ray& ray, const AABB& aabb)
+{
+    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
+    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
+    Vector4 t_min_v = t_upper.min(t_lower);
+    Vector4 t_max_v = t_upper.max(t_lower);
+
+    float t_min = t_min_v[0];
+    float t_max = t_max_v[0];
+
+    for (int i = 1; i < 3; i++) {
+        t_min = std::max(t_min, t_min_v[i]);
+        t_max = std::min(t_max, t_max_v[i]);
+    }
+
+    if (t_max >= t_min && t_min < ray.t && t_max > 0)
+        return t_min;
+    else
+        return std::numeric_limits<float>::max();
+}
+
+static void intersect_ray_bvh(Ray& ray, Node* node)
+{
+    Node* stack[64];
+    unsigned int stack_ptr = 0;
+    while (true) {
+        if (node->is_leaf()) {
+            for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
+                intersect_ray_triangle(ray, *it);
+            }
+            if (stack_ptr == 0)
+                break;
+            else
+                node = stack[--stack_ptr];
+
+            continue;
+        }
+
+        Node* child1 = node->left;
+        Node* child2 = node->right;
+
+        float dist1 = intersect_ray_aabb(ray, child1->aabb);
+        float dist2 = intersect_ray_aabb(ray, child2->aabb);
+
+        if (dist1 > dist2) {
+            std::swap(dist1, dist2);
+            std::swap(child1, child2);
+        }
+
+        if (dist1 == std::numeric_limits<float>::max()) {
+            if (stack_ptr == 0)
+                break;
+            else
+                node = stack[--stack_ptr];
+        } else {
+            node = child1;
+            if (dist2 != std::numeric_limits<float>::max())
+                stack[stack_ptr++] = child2;
+        }
+    }
+}
+#endif
 
 // RNG - Marsaglia's xor32
 static unsigned int seed = 0x12345678;
@@ -281,8 +347,8 @@ int main(int argc, char* argv[])
     assert(count_leaf_triangles(root) == tris.size());
 
     // Raytrace
-    Vector4 cam_pos(-1.5f, -0.2f, -2.5);
-    Vector4 p0(-1, 1, 2), p1(1, 1, 2), p2(-1, -1, 2);
+    Vector4 cam_pos(-1.5f, -0.2f, 2.5);
+    Vector4 p0(-1, 1, -2), p1(1, 1, -2), p2(-1, -1, -2);
 
     // Render to image
     // int image_width = 640;
