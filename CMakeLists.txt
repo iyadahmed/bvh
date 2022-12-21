@@ -15,8 +15,11 @@ FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(tiny_stl)
 
-add_library(vec4 INTERFACE "vec4.hpp")
-add_library(bvh INTERFACE "bvh.hpp")
+add_library(vec4 INTERFACE)
+target_sources(vec4 INTERFACE "vec4.hpp")
+
+add_library(bvh INTERFACE)
+target_sources(bvh INTERFACE "bvh.hpp")
 target_link_libraries(bvh INTERFACE vec4)
 
 add_executable(main "main.cpp")
