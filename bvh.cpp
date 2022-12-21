@@ -90,14 +90,23 @@ static void bvh(Node* parent)
     upper = Vector4(-1 * std::numeric_limits<float>::infinity());
     lower = Vector4(std::numeric_limits<float>::infinity());
 
-    // TODO: calculate variance and split triangles along axis of greatest variance
+    // Calculate variance to determine split axis based on axis with largest variance,
+    // this produces more balanced trees and overcomes an issue that happens with meshes that contain
+    // long thin triangles, where normal largest-bounding-box-split-axis fails.
+    // P.S.: we also calculate the node's bounding box in same loop while we are at it
     Vector4 mean(0.0f);
     Vector4 mean_of_squares(0.0f);
+    long num_tris = std::distance(begin, end);
+    assert(num_tris > 0);
     for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
         for (int i = 0; i < 3; i++) {
             upper = upper.max(it->vertices[i]);
             lower = lower.min(it->vertices[i]);
         }
+
+        Vector4 tc = it->calc_centroid();
+        mean = mean + tc / num_tris;
+        mean_of_squares = mean_of_squares + (tc * tc) / num_tris;
     }
     Vector4 variance = mean_of_squares - mean * mean;
 
@@ -108,19 +117,17 @@ static void bvh(Node* parent)
     upper = upper + Vector4(std::numeric_limits<float>::epsilon());
     lower = lower - Vector4(std::numeric_limits<float>::epsilon());
 
-    Vector4 dims = upper - lower;
-
     int split_axis = 0;
 
-    if (dims[1] > dims[0]) {
+    if (variance[1] > variance[0]) {
         split_axis = 1;
     }
 
-    if (dims[2] > dims[split_axis]) {
+    if (variance[2] > variance[split_axis]) {
         split_axis = 2;
     }
 
-    float split_pos = lower[split_axis] + dims[split_axis] * 0.5f;
+    float split_pos = mean[split_axis];
 
     auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle& t) {
         return t.calc_centroid()[split_axis] < split_pos;
