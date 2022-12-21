@@ -61,20 +61,20 @@ union Vector4 {
 
     float max_elem3() const
     {
-        __m128 a = _mm_movehl_ps(mm, mm); // z w z w
-        __m128 b = _mm_movehdup_ps(mm); // y y w w
-        __m128 c = _mm_max_ps(a, b); // max(z, y), ...
-        Vector4 res = _mm_max_ps(mm, c); // max(x, max(z, y)), ...
-        return res.x;
+        __m128 a = _mm_unpacklo_ps(mm, mm); // x x y y
+        __m128 b = _mm_unpackhi_ps(mm, mm); // z z w w
+        __m128 c = _mm_max_ps(a, b); // ..., max(x, z), ..., ...
+        Vector4 res = _mm_max_ps(mm, c); // ..., max(y, max(x, z)), ..., ...
+        return res.y;
     }
 
     float min_elem3() const
     {
-        __m128 a = _mm_movehl_ps(mm, mm); // z w z w
-        __m128 b = _mm_movehdup_ps(mm); // y y w w
-        __m128 c = _mm_min_ps(a, b); // min(z, y), ...
-        Vector4 res = _mm_min_ps(mm, c); // min(x, min(z, y)), ...
-        return res.x;
+        __m128 a = _mm_unpacklo_ps(mm, mm); // x x y y
+        __m128 b = _mm_unpackhi_ps(mm, mm); // z z w w
+        __m128 c = _mm_min_ps(a, b); // ..., min(x, z), ..., ...
+        Vector4 res = _mm_min_ps(mm, c); // ..., min(y, min(x, z)), ..., ...
+        return res.y;
     }
 
     float length3() const
