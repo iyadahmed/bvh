@@ -184,13 +184,8 @@ static bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
     Vector4 t_min_v = t_upper.min(t_lower);
     Vector4 t_max_v = t_upper.max(t_lower);
 
-    float t_min = t_min_v[0];
-    float t_max = t_max_v[0];
-
-    for (int i = 1; i < 3; i++) {
-        t_min = std::max(t_min, t_min_v[i]);
-        t_max = std::min(t_max, t_max_v[i]);
-    }
+    float t_min = t_min_v.max_elem3();
+    float t_max = t_max_v.min_elem3();
 
     return t_max >= t_min && t_min < ray.t && t_max > 0;
 }
@@ -218,13 +213,8 @@ static float intersect_ray_aabb(const Ray& ray, const AABB& aabb)
     Vector4 t_min_v = t_upper.min(t_lower);
     Vector4 t_max_v = t_upper.max(t_lower);
 
-    float t_min = t_min_v[0];
-    float t_max = t_max_v[0];
-
-    for (int i = 1; i < 3; i++) {
-        t_min = std::max(t_min, t_min_v[i]);
-        t_max = std::min(t_max, t_max_v[i]);
-    }
+    float t_min = t_min_v.max_elem3();
+    float t_max = t_max_v.min_elem3();
 
     if (t_max >= t_min && t_min < ray.t && t_max > 0)
         return t_min;
