@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(bvh)
 
 include(FetchContent) # Needs to be included first
+Set(FETCHCONTENT_QUIET FALSE)
 FetchContent_Declare(
 	sdl
 	GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
