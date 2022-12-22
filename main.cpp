@@ -1,13 +1,40 @@
 #include <chrono>
 #include <cstdio>
 #include <iostream>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 #include <SDL.h>
 
 #include "bvh.hpp"
 #include "vec4.hpp"
+
+static void render(SDL_Renderer* renderer, const BVH::BVH& bvh, Vector4 cam_pos, Vector4 p0, Vector4 p1, Vector4 p2)
+{
+    int width, height;
+    SDL_GetRendererOutputSize(renderer, &width, &height);
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            Vector4 pixel_pos = cam_pos + p0 + (p1 - p0) * (x / (float)width) + (p2 - p0) * (y / (float)height);
+
+            Vector4 ray_origin = cam_pos;
+            Vector4 ray_direction = (pixel_pos - cam_pos).normalized3();
+
+            float t = 0.0f;
+            if (bvh.does_intersect_ray(cam_pos, ray_direction, &t)) {
+                unsigned char c = 500 - (int)(t * 42);
+                SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+                SDL_RenderDrawPoint(renderer, x, y);
+            } else {
+                // TODO: draw background, sky, or do nothing
+            }
+        }
+    }
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "Rendering took: " << (t2 - t1).count() / 1'000'000 << " milli seconds" << std::endl;
+}
 
 int main(int argc, char* argv[])
 {
@@ -37,9 +64,6 @@ int main(int argc, char* argv[])
 
     BVH::BVH bvh(tris);
 
-    Vector4 cam_pos(-1.5f, -0.2f, 2.5);
-    Vector4 p0(-1, 1, -2), p1(1, 1, -2), p2(-1, -1, -2);
-
     SDL_Event event;
     SDL_Renderer* renderer;
     SDL_Window* window;
@@ -53,26 +77,9 @@ int main(int argc, char* argv[])
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-    for (int y = 0; y < WINDOW_HEIGHT; y++) {
-        for (int x = 0; x < WINDOW_WIDTH; x++) {
-            Vector4 pixel_pos = cam_pos + p0 + (p1 - p0) * (x / (float)WINDOW_WIDTH) + (p2 - p0) * (y / (float)WINDOW_HEIGHT);
-
-            Vector4 ray_origin = cam_pos;
-            Vector4 ray_direction = (pixel_pos - cam_pos).normalized3();
-
-            float t = 0.0f;
-            if (bvh.does_intersect_ray(cam_pos, ray_direction, &t)) {
-                unsigned char c = 500 - (int)(t * 42);
-                SDL_SetRenderDrawColor(renderer, c, c, c, 255);
-                SDL_RenderDrawPoint(renderer, x, y);
-            } else {
-                // TODO: draw background, sky, or do nothing
-            }
-        }
-    }
-    auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "Rendering took: " << (t2 - t1).count() / 1'000'000 << " milli seconds" << std::endl;
+    Vector4 cam_pos(-1.5f, -0.2f, 2.5);
+    Vector4 p0(-1, 1, -2), p1(1, 1, -2), p2(-1, -1, -2);
+    render(renderer, bvh, cam_pos, p0, p1, p2);
 
     SDL_RenderPresent(renderer);
     while (1) {
