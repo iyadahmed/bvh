@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
 
     // Loads .tri mesh file
     std::vector<BVH::Triangle> tris;
+    {
     FILE* file = fopen(filepath, "r");
     if (file == NULL) {
         throw std::runtime_error("Failed to open file");
@@ -61,6 +62,7 @@ int main(int argc, char* argv[])
         tris.push_back({ v1, v2, v3 });
     }
     fclose(file);
+    }
 
     BVH::BVH bvh(tris);
 
