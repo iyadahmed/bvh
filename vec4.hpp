@@ -20,14 +20,6 @@ union Vector4 {
     {
     }
 
-    Vector4(float values[3])
-        : x(values[0])
-        , y(values[1])
-        , z(values[2])
-        , w(0.0f)
-    {
-    }
-
     explicit Vector4(const float& value)
     {
         mm = _mm_set1_ps(value);

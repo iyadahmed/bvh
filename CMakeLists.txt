@@ -14,15 +14,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(tiny_stl)
-
 add_library(BVH "bvh.cpp" "bvh.hpp")
-add_library(Utils "utils.cpp" "utils.hpp")
-
-add_executable(render_stl_to_ppm "render_stl_to_ppm.cpp")
-target_link_libraries(render_stl_to_ppm PRIVATE BVH tiny_stl Utils)
-
-add_executable(render_tri_to_ppm "render_tri_to_ppm.cpp")
-target_link_libraries(render_tri_to_ppm PRIVATE BVH Utils)
-
 add_executable(main "main.cpp")
 target_link_libraries(main BVH SDL2::SDL2 SDL2::SDL2main)
