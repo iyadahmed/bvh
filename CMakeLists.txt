@@ -15,5 +15,5 @@ FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(tiny_stl)
 add_library(BVH "bvh.cpp" "bvh.hpp")
-add_executable(main "main.cpp")
-target_link_libraries(main BVH SDL2::SDL2 SDL2::SDL2main)
+add_executable(main "main.cpp" "camera.hpp")
+target_link_libraries(main tiny_stl BVH SDL2::SDL2 SDL2::SDL2main)
