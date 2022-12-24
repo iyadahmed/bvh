@@ -2,8 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/build_linux/_deps/sdl-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/sdl-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tiny_stl" vcs="Git" />
   </component>
 </project>
