@@ -17,7 +17,7 @@ public:
         yaw = 0.0f;
     }
 
-    void calc_vectors(Vector4 *p_up, Vector4 *p_right, Vector4 *p_forward) {
+    void calc_vectors(Vector4 *p_up, Vector4 *p_right, Vector4 *p_forward) const {
         // Calculate new up and right vectors based on yaw
         Vector4 new_forward = right * std::sin(yaw) + forward * std::cos(yaw);
         Vector4 new_right = new_forward.cross3(up);
@@ -30,11 +30,11 @@ public:
         *p_right = new_right;
     }
 
-    float get_fov() {
+    float get_fov() const {
         return fov;
     }
 
-    Vector4 get_pos() {
+    Vector4 get_pos() const {
         return pos;
     }
 
