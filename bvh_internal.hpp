@@ -11,239 +11,231 @@
 
 namespace BVH {
 
-struct AABB {
-    Vector4 upper, lower;
-};
+    struct AABB {
+        Vector4 upper, lower;
+    };
 
-struct Ray {
-    Vector4 O, D;
-    float t;
+    struct Ray {
+        Vector4 O, D;
+        float t;
 
-    Ray(Vector4 origin, Vector4 direction)
-    {
-        O = origin;
-        D = direction;
-        t = std::numeric_limits<float>::max();
+        Ray(Vector4 origin, Vector4 direction) {
+            O = origin;
+            D = direction;
+            t = std::numeric_limits<float>::max();
+        }
+    };
+
+    struct Node {
+        std::vector<Triangle>::iterator begin, end;
+        Node *left = nullptr, *right = nullptr;
+        AABB aabb;
+
+        Node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end) {
+            this->begin = begin;
+            this->end = end;
+            left = nullptr;
+            right = nullptr;
+        }
+
+        bool is_leaf() const {
+            return (left == nullptr) && (right == nullptr);
+        }
+    };
+
+    int count_nodes(Node *node) {
+        if (node == nullptr)
+            return 0;
+
+        return 1 + count_nodes(node->left) + count_nodes(node->right);
     }
-};
-
-struct Node {
-    std::vector<Triangle>::iterator begin, end;
-    Node *left = nullptr, *right = nullptr;
-    AABB aabb;
-
-    Node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end)
-    {
-        this->begin = begin;
-        this->end = end;
-        left = nullptr;
-        right = nullptr;
-    }
-
-    bool is_leaf() const
-    {
-        return (left == nullptr) && (right == nullptr);
-    }
-};
-
-int count_nodes(Node* node)
-{
-    if (node == nullptr)
-        return 0;
-
-    return 1 + count_nodes(node->left) + count_nodes(node->right);
-}
 
 // https://stackoverflow.com/a/9181223/8094047
-void free_tree(Node* node)
-{
-    if (node == nullptr)
-        return;
+    void free_tree(Node *node) {
+        if (node == nullptr)
+            return;
 
-    free_tree(node->left);
-    free_tree(node->right);
+        free_tree(node->left);
+        free_tree(node->right);
 
-    delete node;
-}
-
-int count_leaf_triangles(Node* node)
-{
-    if (node == nullptr) {
-        return 0;
-    } else if (node->is_leaf()) {
-        return std::abs(std::distance(node->begin, node->end));
-    } else {
-        return count_leaf_triangles(node->left) + count_leaf_triangles(node->right);
+        delete node;
     }
-}
 
-void subdivide(Node* parent)
-{
-    auto begin = parent->begin;
-    auto end = parent->end;
+    int count_leaf_triangles(Node *node) {
+        if (node == nullptr) {
+            return 0;
+        } else if (node->is_leaf()) {
+            return std::abs(std::distance(node->begin, node->end));
+        } else {
+            return count_leaf_triangles(node->left) + count_leaf_triangles(node->right);
+        }
+    }
 
-    assert(begin < end);
+    void subdivide(Node *parent) {
+        auto begin = parent->begin;
+        auto end = parent->end;
 
-    Vector4& upper = parent->aabb.upper;
-    Vector4& lower = parent->aabb.lower;
+        assert(begin < end);
 
-    upper = Vector4(-1 * std::numeric_limits<float>::infinity());
-    lower = Vector4(std::numeric_limits<float>::infinity());
+        Vector4 &upper = parent->aabb.upper;
+        Vector4 &lower = parent->aabb.lower;
 
-    // Calculate variance to determine split axis based on axis with largest variance,
-    // this produces more balanced trees and overcomes an issue that happens with meshes that contain
-    // long thin triangles, where normal largest-bounding-box-split-axis fails.
-    // P.S.: we also calculate the node's bounding box in same loop while we are at it
-    Vector4 mean(0.0f);
-    Vector4 mean_of_squares(0.0f);
-    long num_tris = std::distance(begin, end);
-    assert(num_tris > 0);
-    for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
-        for (int i = 0; i < 3; i++) {
-            upper = upper.max(it->vertices[i]);
-            lower = lower.min(it->vertices[i]);
+        upper = Vector4(-1 * std::numeric_limits<float>::infinity());
+        lower = Vector4(std::numeric_limits<float>::infinity());
+
+        // Calculate variance to determine split axis based on axis with largest variance,
+        // this produces more balanced trees and overcomes an issue that happens with meshes that contain
+        // long thin triangles, where normal largest-bounding-box-split-axis fails.
+        // P.S.: we also calculate the node's bounding box in same loop while we are at it
+        Vector4 mean(0.0f);
+        Vector4 mean_of_squares(0.0f);
+        long num_tris = std::distance(begin, end);
+        assert(num_tris > 0);
+        for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
+            for (int i = 0; i < 3; i++) {
+                upper = upper.max(it->vertices[i]);
+                lower = lower.min(it->vertices[i]);
+            }
+
+            Vector4 tc = it->calc_centroid();
+            mean = mean + tc / num_tris;
+            mean_of_squares = mean_of_squares + (tc * tc) / num_tris;
+        }
+        Vector4 variance = mean_of_squares - mean * mean;
+
+        // Expand bounding box by an epsilon;
+        // fixes an issue where rays that are tangent to the bounding box miss,
+        // hopefully this does not strike back and need extra margins in future,
+        // P.S.: this is probably related to numeric precision of instrinsics and order of floating-point operations
+        upper = upper + Vector4(std::numeric_limits<float>::epsilon());
+        lower = lower - Vector4(std::numeric_limits<float>::epsilon());
+
+        int split_axis = 0;
+
+        if (variance[1] > variance[0]) {
+            split_axis = 1;
         }
 
-        Vector4 tc = it->calc_centroid();
-        mean = mean + tc / num_tris;
-        mean_of_squares = mean_of_squares + (tc * tc) / num_tris;
-    }
-    Vector4 variance = mean_of_squares - mean * mean;
+        if (variance[2] > variance[split_axis]) {
+            split_axis = 2;
+        }
 
-    // Expand bounding box by an epsilon;
-    // fixes an issue where rays that are tangent to the bounding box miss,
-    // hopefully this does not strike back and need extra margins in future,
-    // P.S.: this is probably related to numeric precision of instrinsics and order of floating-point operations
-    upper = upper + Vector4(std::numeric_limits<float>::epsilon());
-    lower = lower - Vector4(std::numeric_limits<float>::epsilon());
+        float split_pos = mean[split_axis];
 
-    int split_axis = 0;
+        auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle &t) {
+            return t.calc_centroid()[split_axis] < split_pos;
+        });
 
-    if (variance[1] > variance[0]) {
-        split_axis = 1;
-    }
+        if ((middle == begin) || (middle == end)) {
+            return;
+        }
 
-    if (variance[2] > variance[split_axis]) {
-        split_axis = 2;
-    }
+        Node *left = new Node(begin, middle);
+        Node *right = new Node(middle, end);
 
-    float split_pos = mean[split_axis];
+        parent->left = left;
+        parent->right = right;
 
-    auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle& t) {
-        return t.calc_centroid()[split_axis] < split_pos;
-    });
-
-    if ((middle == begin) || (middle == end)) {
-        return;
+        subdivide(left);
+        subdivide(right);
     }
 
-    Node* left = new Node(begin, middle);
-    Node* right = new Node(middle, end);
-
-    parent->left = left;
-    parent->right = right;
-
-    subdivide(left);
-    subdivide(right);
-}
-
-void intersect_ray_triangle(Ray& ray, const Triangle& tri)
-{
-    const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
-    const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
-    const Vector4 h = ray.D.cross3(edge2);
-    const float a = edge1.dot3(h);
-    if (a > -0.0001f && a < 0.0001f)
-        return; // ray parallel to triangle
-    const float f = 1 / a;
-    const Vector4 s = ray.O - tri.vertices[0];
-    const float u = f * s.dot3(h);
-    if (u < 0 || u > 1)
-        return;
-    const Vector4 q = s.cross3(edge1);
-    const float v = f * ray.D.dot3(q);
-    if (v < 0 || u + v > 1)
-        return;
-    const float t = f * edge2.dot3(q);
-    if (t > 0.0001f) {
-        ray.t = std::min(ray.t, t);
+    void intersect_ray_triangle(Ray &ray, const Triangle &tri) {
+        const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
+        const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
+        const Vector4 h = ray.D.cross3(edge2);
+        const float a = edge1.dot3(h);
+        if (a > -0.0001f && a < 0.0001f)
+            return; // ray parallel to triangle
+        const float f = 1 / a;
+        const Vector4 s = ray.O - tri.vertices[0];
+        const float u = f * s.dot3(h);
+        if (u < 0 || u > 1)
+            return;
+        const Vector4 q = s.cross3(edge1);
+        const float v = f * ray.D.dot3(q);
+        if (v < 0 || u + v > 1)
+            return;
+        const float t = f * edge2.dot3(q);
+        if (t > 0.0001f) {
+            ray.t = std::min(ray.t, t);
+        }
     }
-}
 
-bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float *t_min_out)
-{
-    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
-    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
-    Vector4 t_min_v = t_upper.min(t_lower);
-    Vector4 t_max_v = t_upper.max(t_lower);
+    bool intersect_ray_aabb(const Ray &ray, const AABB &aabb, float *t_min_out) {
+        Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
+        Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
+        Vector4 t_min_v = t_upper.min(t_lower);
+        Vector4 t_max_v = t_upper.max(t_lower);
 
-    float t_min = t_min_v.max_elem3();
-    float t_max = t_max_v.min_elem3();
+        float t_min = t_min_v.max_elem3();
+        float t_max = t_max_v.min_elem3();
 
-    bool is_intersecting = t_max >= t_min && t_min < ray.t && t_max > 0;
-    *t_min_out = is_intersecting ? t_min : std::numeric_limits<float>::max();
-    return is_intersecting;
-}
+        bool is_intersecting = t_max >= t_min && t_min < ray.t && t_max > 0;
+        *t_min_out = is_intersecting ? t_min : std::numeric_limits<float>::max();
+        return is_intersecting;
+    }
 
 #if !USE_ORDERED_TRAVERSAL
-void intersect_ray_bvh(Ray& ray, Node* node)
-{
-    float t_min;
-    if (!intersect_ray_aabb(ray, node->aabb, &t_min)) {
-        return;
-    }
-
-    if (node->is_leaf()) {
-        for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
-            intersect_ray_triangle(ray, *it);
+    void intersect_ray_bvh(Ray& ray, Node* node)
+    {
+        float t_min;
+        if (!intersect_ray_aabb(ray, node->aabb, &t_min)) {
+            return;
         }
-    } else {
-        intersect_ray_bvh(ray, node->left);
-        intersect_ray_bvh(ray, node->right);
-    }
-}
-#else
-void intersect_ray_bvh(Ray& ray, Node* node)
-{
-    Node* stack[64];
-    unsigned int stack_ptr = 0;
-    while (true) {
+
         if (node->is_leaf()) {
             for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
                 intersect_ray_triangle(ray, *it);
             }
-            if (stack_ptr == 0)
-                break;
-            else
-                node = stack[--stack_ptr];
-
-            continue;
-        }
-
-        Node* child1 = node->left;
-        Node* child2 = node->right;
-
-        float dist1, dist2;
-        intersect_ray_aabb(ray, child1->aabb, &dist1);
-        intersect_ray_aabb(ray, child2->aabb, &dist2);
-
-        if (dist1 > dist2) {
-            std::swap(dist1, dist2);
-            std::swap(child1, child2);
-        }
-
-        if (dist1 == std::numeric_limits<float>::max()) {
-            if (stack_ptr == 0)
-                break;
-            else
-                node = stack[--stack_ptr];
         } else {
-            node = child1;
-            if (dist2 != std::numeric_limits<float>::max())
-                stack[stack_ptr++] = child2;
+            intersect_ray_bvh(ray, node->left);
+            intersect_ray_bvh(ray, node->right);
         }
     }
-}
+#else
+
+    void intersect_ray_bvh(Ray &ray, Node *node) {
+        Node *stack[64];
+        unsigned int stack_ptr = 0;
+        while (true) {
+            if (node->is_leaf()) {
+                for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
+                    intersect_ray_triangle(ray, *it);
+                }
+                if (stack_ptr == 0)
+                    break;
+                else
+                    node = stack[--stack_ptr];
+
+                continue;
+            }
+
+            Node *child1 = node->left;
+            Node *child2 = node->right;
+
+            float dist1, dist2;
+            intersect_ray_aabb(ray, child1->aabb, &dist1);
+            intersect_ray_aabb(ray, child2->aabb, &dist2);
+
+            if (dist1 > dist2) {
+                std::swap(dist1, dist2);
+                std::swap(child1, child2);
+            }
+
+            if (dist1 == std::numeric_limits<float>::max()) {
+                if (stack_ptr == 0)
+                    break;
+                else
+                    node = stack[--stack_ptr];
+            } else {
+                node = child1;
+                if (dist2 != std::numeric_limits<float>::max())
+                    stack[stack_ptr++] = child2;
+            }
+        }
+    }
+
 #endif
 
 }
