@@ -170,8 +170,7 @@ void intersect_ray_triangle(Ray& ray, const Triangle& tri)
     }
 }
 
-#if !USE_ORDERED_TRAVERSAL
-bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
+bool intersect_ray_aabb(const Ray& ray, const AABB& aabb, float *t_min_out)
 {
     Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
     Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
@@ -181,12 +180,16 @@ bool intersect_ray_aabb(const Ray& ray, const AABB& aabb)
     float t_min = t_min_v.max_elem3();
     float t_max = t_max_v.min_elem3();
 
-    return t_max >= t_min && t_min < ray.t && t_max > 0;
+    bool is_intersecting = t_max >= t_min && t_min < ray.t && t_max > 0;
+    *t_min_out = is_intersecting ? t_min : std::numeric_limits<float>::max();
+    return is_intersecting;
 }
 
+#if !USE_ORDERED_TRAVERSAL
 void intersect_ray_bvh(Ray& ray, Node* node)
 {
-    if (!intersect_ray_aabb(ray, node->aabb)) {
+    float t_min;
+    if (!intersect_ray_aabb(ray, node->aabb, &t_min)) {
         return;
     }
 
@@ -200,22 +203,6 @@ void intersect_ray_bvh(Ray& ray, Node* node)
     }
 }
 #else
-float intersect_ray_aabb(const Ray& ray, const AABB& aabb)
-{
-    Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
-    Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
-    Vector4 t_min_v = t_upper.min(t_lower);
-    Vector4 t_max_v = t_upper.max(t_lower);
-
-    float t_min = t_min_v.max_elem3();
-    float t_max = t_max_v.min_elem3();
-
-    if (t_max >= t_min && t_min < ray.t && t_max > 0)
-        return t_min;
-    else
-        return std::numeric_limits<float>::max();
-}
-
 void intersect_ray_bvh(Ray& ray, Node* node)
 {
     Node* stack[64];
@@ -236,8 +223,9 @@ void intersect_ray_bvh(Ray& ray, Node* node)
         Node* child1 = node->left;
         Node* child2 = node->right;
 
-        float dist1 = intersect_ray_aabb(ray, child1->aabb);
-        float dist2 = intersect_ray_aabb(ray, child2->aabb);
+        float dist1, dist2;
+        intersect_ray_aabb(ray, child1->aabb, &dist1);
+        intersect_ray_aabb(ray, child2->aabb, &dist2);
 
         if (dist1 > dist2) {
             std::swap(dist1, dist2);
