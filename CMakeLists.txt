@@ -18,4 +18,4 @@ add_library(BVH "bvh.cpp" "bvh.hpp")
 add_executable(main "main.cpp" "camera.hpp")
 # Note: SDL2::SDL2main has to come before SDL2::SDL2
 # https://github.com/msys2/MINGW-packages/issues/10459#issuecomment-1003700201
-target_link_libraries(main tiny_stl BVH SDL2::SDL2main SDL2::SDL2)
+target_link_libraries(main tiny_stl BVH SDL2::SDL2main SDL2::SDL2-static)
