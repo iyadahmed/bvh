@@ -10,6 +10,7 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 #include "camera.hpp"
+#include "main.hpp"
 
 Camera cam;
 
@@ -67,31 +68,13 @@ static void render(SDL_Renderer *renderer, const BVH::BVH &bvh) {
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        puts("Expected arguments: mesh.tri");
+        puts("Expected arguments: mesh.[stl|tri]");
         return 1;
     }
 
     const char *filepath = argv[1];
-
-    // Loads .tri mesh file
-    std::vector<BVH::Triangle> tris;
-    {
-        FILE *file = fopen(filepath, "r");
-        if (file == NULL) {
-            throw std::runtime_error("Failed to open file");
-        }
-        float a, b, c, d, e, f, g, h, i;
-        while (fscanf(file, "%f %f %f %f %f %f %f %f %f\n",
-                      &a, &b, &c, &d, &e, &f, &g, &h, &i)
-               == 9) {
-            Vector4 v1(a, b, c);
-            Vector4 v2(d, e, f);
-            Vector4 v3(g, h, i);
-            tris.push_back({v1, v2, v3});
-        }
-        fclose(file);
-    }
-
+    std::vector<BVH::Triangle> tris = load_bvh_from_mesh_file(filepath);
+    std::cout << "Loaded " << tris.size() << " triangles from " << filepath << std::endl;
     BVH::BVH bvh(tris);
 
     SDL_Event event;
