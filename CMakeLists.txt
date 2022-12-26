@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(tiny_stl)
-add_library(BVH "bvh.cpp" "bvh.hpp")
+add_library(BVH "bvh.cpp" "bvh.hpp" "bvh_internal.hpp")
 add_executable(main "main.cpp" "camera.hpp" "main.hpp")
 # Note: SDL2::SDL2main has to come before SDL2::SDL2
 # https://github.com/msys2/MINGW-packages/issues/10459#issuecomment-1003700201
