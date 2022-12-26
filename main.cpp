@@ -2,7 +2,6 @@
 #include <cmath>
 #include <cstdio>
 #include <iostream>
-#include <stdexcept>
 #include <vector>
 
 #include <SDL.h>
