@@ -71,6 +71,16 @@ namespace BVH {
         }
     }
 
+    int count_leaf_nodes(Node *node) {
+        if (node == nullptr) {
+            return 0;
+        } else if (node->is_leaf()) {
+            return 1;
+        } else {
+            return count_leaf_triangles(node->left) + count_leaf_triangles(node->right);
+        }
+    }
+
     void subdivide(Node *parent) {
         auto begin = parent->begin;
         auto end = parent->end;

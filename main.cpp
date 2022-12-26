@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
     std::vector<BVH::Triangle> tris = load_bvh_from_mesh_file(filepath);
     std::cout << "Loaded " << tris.size() << " triangles from " << filepath << std::endl;
     BVH::BVH bvh(tris);
+    bvh.print_stats();
 
     SDL_Event event;
     SDL_Renderer *renderer;

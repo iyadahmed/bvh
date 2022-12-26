@@ -26,6 +26,7 @@ namespace BVH {
         ~BVH();
 
         bool does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const;
+        void print_stats() const;
 
         // Make instances non-copyable
         BVH(const BVH &) = delete;
