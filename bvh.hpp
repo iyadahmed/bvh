@@ -21,7 +21,7 @@ namespace BVH {
         void *root = nullptr;
 
     public:
-        BVH(const std::vector<Triangle> &tris);
+        explicit BVH(const std::vector<Triangle> &tris);
 
         ~BVH();
 
