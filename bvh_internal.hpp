@@ -151,7 +151,7 @@ namespace BVH {
     }
 
     void intersect_ray_triangle(Ray &ray, const Triangle &tri) {
-        constexpr float EPSILON = 0.000001f;
+        constexpr float EPSILON = 0.0f;
         const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
         const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
         const Vector4 h = ray.D.cross3(edge2);
