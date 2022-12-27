@@ -100,7 +100,7 @@ namespace BVH {
         } else if (node->is_leaf()) {
             return 1;
         } else {
-            return count_leaf_triangles(node->left) + count_leaf_triangles(node->right);
+            return count_leaf_nodes(node->left) + count_leaf_nodes(node->right);
         }
     }
 
