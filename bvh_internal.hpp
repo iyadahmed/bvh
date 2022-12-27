@@ -155,7 +155,7 @@ namespace BVH {
         const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
         const Vector4 h = ray.D.cross3(edge2);
         const float a = edge1.dot3(h);
-        if (a > -0.0001f && a < 0.0001f)
+        if (a > -0.000001f && a < 0.000001f)
             return; // ray parallel to triangle
         const float f = 1 / a;
         const Vector4 s = ray.O - tri.vertices[0];
