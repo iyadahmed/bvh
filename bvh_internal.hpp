@@ -16,13 +16,36 @@ namespace BVH {
     };
 
     struct Ray {
-        Vector4 O, D;
+    private:
+        Vector4 O, D, rD;
         float t;
 
+    public:
         Ray(Vector4 origin, Vector4 direction) {
             O = origin;
             D = direction;
+            rD = 1.0f / direction;
             t = std::numeric_limits<float>::max();
+        }
+
+        Vector4 get_reciprocal_direction() const {
+            return rD;
+        }
+
+        Vector4 get_direction() const {
+            return D;
+        }
+
+        Vector4 get_origin() const {
+            return O;
+        }
+
+        float get_t() const {
+            return t;
+        }
+
+        void set_t(float t) {
+            this->t = t;
         }
     };
 
@@ -154,35 +177,35 @@ namespace BVH {
         constexpr float EPSILON = 0.0f;
         const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
         const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
-        const Vector4 h = ray.D.cross3(edge2);
+        const Vector4 h = ray.get_direction().cross3(edge2);
         const float a = edge1.dot3(h);
         if (a > -EPSILON && a < EPSILON)
             return; // ray parallel to triangle
         const float f = 1 / a;
-        const Vector4 s = ray.O - tri.vertices[0];
+        const Vector4 s = ray.get_origin() - tri.vertices[0];
         const float u = f * s.dot3(h);
         if (u < 0 || u > 1)
             return;
         const Vector4 q = s.cross3(edge1);
-        const float v = f * ray.D.dot3(q);
+        const float v = f * ray.get_direction().dot3(q);
         if (v < 0 || u + v > 1)
             return;
         const float t = f * edge2.dot3(q);
         if (t > EPSILON) {
-            ray.t = std::min(ray.t, t);
+            ray.set_t(std::min(ray.get_t(), t));
         }
     }
 
     float intersect_ray_aabb(const Ray &ray, const AABB &aabb) {
-        Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
-        Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
+        Vector4 t_upper = (aabb.upper - ray.get_origin()) * ray.get_reciprocal_direction();
+        Vector4 t_lower = (aabb.lower - ray.get_origin()) * ray.get_reciprocal_direction();
         Vector4 t_min_v = t_upper.min(t_lower);
         Vector4 t_max_v = t_upper.max(t_lower);
 
         float t_min = t_min_v.max_elem3();
         float t_max = t_max_v.min_elem3();
 
-        if (t_max >= t_min && t_min < ray.t && t_max > 0)
+        if (t_max >= t_min && t_min < ray.get_t() && t_max > 0)
             return t_min;
         else
             return std::numeric_limits<float>::max();

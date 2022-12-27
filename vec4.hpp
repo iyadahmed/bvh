@@ -98,3 +98,7 @@ union Vector4 {
         return arr[i];
     }
 };
+
+static Vector4 operator/(const float &rhs, const Vector4 &lhs) {
+    return _mm_div_ps(_mm_set1_ps(rhs), lhs.mm);
+}

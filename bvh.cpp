@@ -21,8 +21,8 @@ namespace BVH {
     bool BVH::does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const {
         Ray ray(origin, direction);
         intersect_ray_bvh(ray, (Node *) root);
-        *t_out = ray.t;
-        return ray.t < std::numeric_limits<float>::max();
+        *t_out = ray.get_t();
+        return ray.get_t() < std::numeric_limits<float>::max();
     }
 
     void BVH::print_stats() const {
