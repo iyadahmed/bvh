@@ -151,11 +151,12 @@ namespace BVH {
     }
 
     void intersect_ray_triangle(Ray &ray, const Triangle &tri) {
+        constexpr float EPSILON = 0.000001f;
         const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
         const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
         const Vector4 h = ray.D.cross3(edge2);
         const float a = edge1.dot3(h);
-        if (a > -0.000001f && a < 0.000001f)
+        if (a > -EPSILON && a < EPSILON)
             return; // ray parallel to triangle
         const float f = 1 / a;
         const Vector4 s = ray.O - tri.vertices[0];
@@ -167,7 +168,7 @@ namespace BVH {
         if (v < 0 || u + v > 1)
             return;
         const float t = f * edge2.dot3(q);
-        if (t > 0.0001f) {
+        if (t > EPSILON) {
             ray.t = std::min(ray.t, t);
         }
     }
