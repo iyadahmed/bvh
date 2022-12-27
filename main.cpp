@@ -11,7 +11,7 @@
 #include "camera.hpp"
 #include "main.hpp"
 
-Camera cam;
+Camera cam({0, -2, 0}, {0, 0, 0});
 
 static void render(SDL_Renderer *renderer, const BVH::BVH &bvh) {
     int width, height;

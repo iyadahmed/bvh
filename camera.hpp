@@ -7,11 +7,13 @@ private:
     Vector4 pos, up, right, forward;
     float fov, pitch, yaw;
 public:
-    Camera() {
-        up = Vector4(0, 0, 1);
-        right = Vector4(1, 0, 0);
-        forward = up.cross3(right);
-        pos = Vector4(0, -5, -2);
+    Camera(Vector4 pos, Vector4 target) {
+        forward = (target - pos).normalized3();
+        Vector4 global_up(0, 0, 1);
+        right = global_up.cross3(forward).normalized3();
+        up = forward.cross3(right);
+        this->pos = pos;
+
         fov = 3.14f / 4.0f;
         pitch = 0.0f;
         yaw = 0.0f;
@@ -39,7 +41,7 @@ public:
     }
 
     void rotate(float d_yaw, float d_pitch) {
-        yaw += d_yaw;
+        yaw -= d_yaw;
         pitch += d_pitch;
     }
 
