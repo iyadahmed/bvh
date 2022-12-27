@@ -173,7 +173,7 @@ namespace BVH {
         }
     }
 
-    bool intersect_ray_aabb(const Ray &ray, const AABB &aabb, float *t_min_out) {
+    float intersect_ray_aabb(const Ray &ray, const AABB &aabb) {
         Vector4 t_upper = (aabb.upper - ray.O) / ray.D;
         Vector4 t_lower = (aabb.lower - ray.O) / ray.D;
         Vector4 t_min_v = t_upper.min(t_lower);
@@ -182,16 +182,16 @@ namespace BVH {
         float t_min = t_min_v.max_elem3();
         float t_max = t_max_v.min_elem3();
 
-        bool is_intersecting = t_max >= t_min && t_min < ray.t && t_max > 0;
-        *t_min_out = is_intersecting ? t_min : std::numeric_limits<float>::max();
-        return is_intersecting;
+        if (t_max >= t_min && t_min < ray.t && t_max > 0)
+            return t_min;
+        else
+            return std::numeric_limits<float>::max();
     }
 
 #if !USE_ORDERED_TRAVERSAL
     void intersect_ray_bvh(Ray& ray, Node* node)
     {
-        float t_min;
-        if (!intersect_ray_aabb(ray, node->aabb, &t_min)) {
+        if (intersect_ray_aabb(ray, node->aabb) == std::numeric_limits<float>::max()) {
             return;
         }
 
@@ -225,9 +225,8 @@ namespace BVH {
             Node *child1 = node->left;
             Node *child2 = node->right;
 
-            float dist1, dist2;
-            intersect_ray_aabb(ray, child1->aabb, &dist1);
-            intersect_ray_aabb(ray, child2->aabb, &dist2);
+            float dist1 = intersect_ray_aabb(ray, child1->aabb);
+            float dist2 = intersect_ray_aabb(ray, child2->aabb);
 
             if (dist1 > dist2) {
                 std::swap(dist1, dist2);
