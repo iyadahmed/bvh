@@ -209,8 +209,7 @@ namespace BVH {
             return std::numeric_limits<float>::max();
     }
 
-    void intersect_ray_bvh(Ray& ray, Node* node)
-    {
+    void intersect_ray_bvh(Ray &ray, Node *node) {
         if (intersect_ray_aabb(ray, node->aabb) == std::numeric_limits<float>::max()) {
             return;
         }
