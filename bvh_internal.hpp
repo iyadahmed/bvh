@@ -7,7 +7,7 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 
-#define USE_ORDERED_TRAVERSAL 1
+#define USE_ORDERED_TRAVERSAL 0
 
 namespace BVH {
 
