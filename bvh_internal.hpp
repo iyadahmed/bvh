@@ -114,7 +114,7 @@ namespace BVH {
         upper = Vector4(-1 * std::numeric_limits<float>::infinity());
         lower = Vector4(std::numeric_limits<float>::infinity());
 
-        // Calculate variance to determine split axis based on axis with largest variance,
+        // Calculate variance to determine split axis based on axis with the largest variance,
         // this produces more balanced trees and overcomes an issue that happens with meshes that contain
         // long thin triangles, where normal largest-bounding-box-split-axis fails.
         // P.S.: we also calculate the node's bounding box in same loop while we are at it
@@ -136,8 +136,8 @@ namespace BVH {
 
         // Expand bounding box by an epsilon;
         // fixes an issue where rays that are tangent to the bounding box miss,
-        // hopefully this does not strike back and need extra margins in future,
-        // P.S.: this is probably related to numeric precision of instrinsics and order of floating-point operations
+        // hopefully this does not strike back and need extra margins in the future,
+        // P.S.: this is probably related to numeric precision of intrinsics and order of floating-point operations
         upper = upper + Vector4(std::numeric_limits<float>::epsilon());
         lower = lower - Vector4(std::numeric_limits<float>::epsilon());
 
