@@ -207,6 +207,10 @@ namespace BVH {
     }
 
     void intersect_ray_bvh(Ray &ray, Node *node) {
+        if (node == nullptr) {
+            return;
+        }
+
         if (!intersect_ray_aabb(ray, node->aabb)) {
             return;
         }
