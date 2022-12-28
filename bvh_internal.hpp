@@ -194,7 +194,7 @@ namespace BVH {
         }
     }
 
-    float intersect_ray_aabb(const Ray &ray, const AABB &aabb) {
+    bool intersect_ray_aabb(const Ray &ray, const AABB &aabb) {
         Vector4 t_upper = (aabb.upper - ray.get_origin()) * ray.get_reciprocal_direction();
         Vector4 t_lower = (aabb.lower - ray.get_origin()) * ray.get_reciprocal_direction();
         Vector4 t_min_v = t_upper.min(t_lower);
@@ -203,14 +203,11 @@ namespace BVH {
         float t_min = t_min_v.max_elem3();
         float t_max = t_max_v.min_elem3();
 
-        if (t_max >= t_min && t_min < ray.get_t() && t_max > 0)
-            return t_min;
-        else
-            return std::numeric_limits<float>::max();
+        return (t_max >= t_min && t_min < ray.get_t() && t_max > 0);
     }
 
     void intersect_ray_bvh(Ray &ray, Node *node) {
-        if (intersect_ray_aabb(ray, node->aabb) == std::numeric_limits<float>::max()) {
+        if (!intersect_ray_aabb(ray, node->aabb)) {
             return;
         }
 
