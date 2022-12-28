@@ -33,32 +33,34 @@ static void render(SDL_Renderer *renderer, const BVH::BVH &bvh) {
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
+    for (int y = 0; y < height; y += 4) {
+        for (int x = 0; x < width; x += 4) {
+            for (int v = 0; v < 4; v++)
+                for (int u = 0; u < 4; u++) {
+                    float xn = (x + u) / (float) width;
+                    xn = 2 * xn - 1;
+                    xn *= aspect_ratio;
+                    float yn = (y + v) / (float) height;
+                    yn = 1 - 2 * yn;
 
-            float xn = x / (float) width;
-            xn = 2 * xn - 1;
-            xn *= aspect_ratio;
-            float yn = y / (float) height;
-            yn = 1 - 2 * yn;
+                    Vector4 pixel_pos = cam_pos + forward + right * d * xn + up * d * yn;
 
-            Vector4 pixel_pos = cam_pos + forward + right * d * xn + up * d * yn;
+                    Vector4 ray_origin = cam_pos;
+                    Vector4 ray_direction = (pixel_pos - cam_pos).normalized3();
 
-            Vector4 ray_origin = cam_pos;
-            Vector4 ray_direction = (pixel_pos - cam_pos).normalized3();
+                    float t = 0.0f;
+                    if (bvh.does_intersect_ray(ray_origin, ray_direction, &t)) {
+                        // Map t from [0, inf[ to [0, 1[
+                        // https://math.stackexchange.com/a/3200751/691043
+                        float tr = std::atan(t) / (3.14 / 2);
+                        unsigned char c = (tr * tr) * 255;
 
-            float t = 0.0f;
-            if (bvh.does_intersect_ray(ray_origin, ray_direction, &t)) {
-                // Map t from [0, inf[ to [0, 1[
-                // https://math.stackexchange.com/a/3200751/691043
-                float tr = std::atan(t) / (3.14 / 2);
-                unsigned char c = (tr * tr) * 255;
-
-                SDL_SetRenderDrawColor(renderer, c, c, c, 255);
-                SDL_RenderDrawPoint(renderer, x, y);
-            } else {
-                // TODO: draw background, sky, or do nothing
-            }
+                        SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+                        SDL_RenderDrawPoint(renderer, x + u, y + v);
+                    } else {
+                        // TODO: draw background, sky, or do nothing
+                    }
+                }
         }
     }
     auto t2 = std::chrono::high_resolution_clock::now();
