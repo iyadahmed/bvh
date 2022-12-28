@@ -7,8 +7,6 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 
-#define USE_ORDERED_TRAVERSAL 0
-
 namespace BVH {
 
     struct AABB {
@@ -211,7 +209,6 @@ namespace BVH {
             return std::numeric_limits<float>::max();
     }
 
-#if !USE_ORDERED_TRAVERSAL
     void intersect_ray_bvh(Ray& ray, Node* node)
     {
         if (intersect_ray_aabb(ray, node->aabb) == std::numeric_limits<float>::max()) {
@@ -227,48 +224,5 @@ namespace BVH {
             intersect_ray_bvh(ray, node->right);
         }
     }
-#else
-
-    void intersect_ray_bvh(Ray &ray, Node *node) {
-        Node *stack[64];
-        unsigned int stack_ptr = 0;
-        while (true) {
-            if (node->is_leaf()) {
-                for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
-                    intersect_ray_triangle(ray, *it);
-                }
-                if (stack_ptr == 0)
-                    break;
-                else
-                    node = stack[--stack_ptr];
-
-                continue;
-            }
-
-            Node *child1 = node->left;
-            Node *child2 = node->right;
-
-            float dist1 = intersect_ray_aabb(ray, child1->aabb);
-            float dist2 = intersect_ray_aabb(ray, child2->aabb);
-
-            if (dist1 > dist2) {
-                std::swap(dist1, dist2);
-                std::swap(child1, child2);
-            }
-
-            if (dist1 == std::numeric_limits<float>::max()) {
-                if (stack_ptr == 0)
-                    break;
-                else
-                    node = stack[--stack_ptr];
-            } else {
-                node = child1;
-                if (dist2 != std::numeric_limits<float>::max())
-                    stack[stack_ptr++] = child2;
-            }
-        }
-    }
-
-#endif
 
 }
