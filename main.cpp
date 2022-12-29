@@ -11,6 +11,11 @@
 #include "camera.hpp"
 #include "main.hpp"
 
+constexpr int WINDOW_WIDTH = 640;
+constexpr int WINDOW_HEIGHT = 640;
+constexpr float ROTATION_SPEED = .001;
+constexpr float MOVEMENT_SPEED = .1;
+
 Camera cam({0, -2, 0}, {0, 0, 0});
 
 static void render(SDL_Renderer *renderer, const BVH::BVH &bvh) {
@@ -82,11 +87,6 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     SDL_Renderer *renderer;
     SDL_Window *window;
-
-    constexpr int WINDOW_WIDTH = 640;
-    constexpr int WINDOW_HEIGHT = 640;
-    constexpr float ROTATION_SPEED = .001;
-    constexpr float MOVEMENT_SPEED = .1;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer);
