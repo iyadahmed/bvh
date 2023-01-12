@@ -31,9 +31,9 @@ namespace BVH {
         long num_tris = std::distance(begin, end);
         assert(num_tris > 0);
         for (auto it = begin; it != end; ++it) {
-            for (int i = 0; i < 3; i++) {
-                upper = upper.max(it->vertices[i]);
-                lower = lower.min(it->vertices[i]);
+            for (auto vertex : it->vertices) {
+                upper = upper.max(vertex);
+                lower = lower.min(vertex);
             }
 
             Vector4 tc = it->calc_centroid();
