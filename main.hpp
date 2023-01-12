@@ -59,7 +59,8 @@ bool ends_with(const std::string &str, const std::string &suffix) {
     return true;
 }
 
-std::vector<BVH::Triangle> load_bvh_from_mesh_file(const std::string &filepath) {
+// Supports .stl and .tri files
+std::vector<BVH::Triangle> load_bvh_tris_from_mesh_file(const std::string &filepath) {
     if (ends_with(filepath, ".stl")) {
         return bvh_tris_from_stl_file(filepath.c_str());
     } else if (ends_with(filepath, ".tri")) {
