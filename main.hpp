@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 #include "bvh.hpp"
-#include "tiny_stl/tiny_stl.hpp"
+#include "tiny_stl.hpp"
 
 std::vector<BVH::Triangle> bvh_tris_from_tri_file(const char *filepath) {
     std::vector<BVH::Triangle> tris;
@@ -28,9 +28,9 @@ std::vector<BVH::Triangle> bvh_tris_from_tri_file(const char *filepath) {
 }
 
 std::vector<BVH::Triangle> bvh_tris_from_stl_file(const char *filepath) {
-    auto reader = STL_Mesh_IO::create_reader(filepath);
+    auto reader = Tiny_STL::create_reader(filepath);
     std::vector<BVH::Triangle> tris;
-    STL_Mesh_IO::Triangle t;
+    Tiny_STL::Triangle t;
     BVH::Triangle bt;
     while (reader->read_next_triangle(&t)) {
         for (int i = 0; i < 3; i++) {

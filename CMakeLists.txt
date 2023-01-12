@@ -13,7 +13,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sdl)
 
-add_subdirectory(tiny_stl)
+FETCHCONTENT_DECLARE(
+        tiny_stl
+        GIT_REPOSITORY https://github.com/iyadahmed/tiny_stl.git
+        GIT_TAG dee148c1af0629b47daed11d984ffcbd93df2a6a
+        GIT_SHALLOW ON
+        GIT_PROGRESS TRUE
+)
+FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
+
 add_library(BVH "bvh.cpp" "bvh.hpp" "bvh_internal.hpp")
 add_executable(main "main.cpp" "camera.hpp" "main.hpp")
 # Note: SDL2::SDL2main has to come before SDL2::SDL2
