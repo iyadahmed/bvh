@@ -14,11 +14,32 @@ namespace BVH {
         }
     };
 
+    struct AABB {
+        Vector4 upper, lower;
+    };
+
+    struct Node {
+        std::vector<Triangle>::iterator begin, end;
+        Node *left = nullptr, *right = nullptr;
+        AABB aabb;
+
+        Node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end) {
+            this->begin = begin;
+            this->end = end;
+            left = nullptr;
+            right = nullptr;
+        }
+
+        bool is_leaf() const {
+            return (left == nullptr) && (right == nullptr);
+        }
+    };
+
     class BVH {
 
     private:
         std::vector<Triangle> tris;
-        void *root = nullptr;
+        Node *root = nullptr;
 
     public:
         explicit BVH(const std::vector<Triangle> &tris);

@@ -1,12 +1,13 @@
 #include <iostream>
 
 #include "bvh.hpp"
-#include "bvh_internal.hpp"
+#include "utils.hpp"
+#include "subdivision.hpp"
+#include "ray_intersection.hpp"
 
 namespace BVH {
 
-    BVH::BVH(const std::vector<Triangle> &tris)
-            : tris(tris) {
+    BVH::BVH(const std::vector<Triangle> &tris) : tris(tris) {
         root = new Node(this->tris.begin(), this->tris.end());
         subdivide((Node *) root);
         assert(count_leaf_triangles((Node *) root) == tris.size());
