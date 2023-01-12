@@ -30,7 +30,7 @@ namespace BVH {
         Vector4 mean_of_squares(0.0f);
         long num_tris = std::distance(begin, end);
         assert(num_tris > 0);
-        for (std::vector<Triangle>::iterator it = begin; it != end; ++it) {
+        for (auto it = begin; it != end; ++it) {
             for (int i = 0; i < 3; i++) {
                 upper = upper.max(it->vertices[i]);
                 lower = lower.min(it->vertices[i]);

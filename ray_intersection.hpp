@@ -87,7 +87,7 @@ namespace BVH {
         }
 
         if (node->is_leaf()) {
-            for (std::vector<Triangle>::iterator it = node->begin; it != node->end; ++it) {
+            for (auto it = node->begin; it != node->end; ++it) {
                 intersect_ray_triangle(ray, *it);
             }
         } else {
