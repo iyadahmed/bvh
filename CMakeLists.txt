@@ -4,14 +4,15 @@ project(BVHDemos)
 
 include(FetchContent)
 Set(FETCHCONTENT_QUIET FALSE)
-FETCHCONTENT_DECLARE(
-        sdl
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-2.26.1
-        GIT_SHALLOW ON
-        GIT_PROGRESS TRUE
-)
-FETCHCONTENT_MAKEAVAILABLE(sdl)
+#FETCHCONTENT_DECLARE(
+#        sdl
+#        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+#        GIT_TAG release-2.26.1
+#        GIT_SHALLOW ON
+#        GIT_PROGRESS TRUE
+#)
+#FETCHCONTENT_MAKEAVAILABLE(sdl)
+find_package(SDL2 REQUIRED)
 
 FETCHCONTENT_DECLARE(
         tiny_stl
