@@ -10,35 +10,35 @@ namespace BVH {
 
     struct Ray {
     private:
-        Vector4 O, D, rD;
-        float t;
+        Vector4 m_origin, m_direction, m_reciprocal_direction;
+        float m_t;
 
     public:
         Ray(Vector4 origin, Vector4 direction) {
-            O = origin;
-            D = direction;
-            rD = 1.0f / direction;
-            t = std::numeric_limits<float>::max();
+            m_origin = origin;
+            m_direction = direction;
+            m_reciprocal_direction = 1.0f / direction;
+            m_t = std::numeric_limits<float>::max();
         }
 
         Vector4 get_reciprocal_direction() const {
-            return rD;
+            return m_reciprocal_direction;
         }
 
         Vector4 get_direction() const {
-            return D;
+            return m_direction;
         }
 
         Vector4 get_origin() const {
-            return O;
+            return m_origin;
         }
 
         float get_t() const {
-            return t;
+            return m_t;
         }
 
         void set_t(float t) {
-            this->t = t;
+            this->m_t = t;
         }
     };
 
