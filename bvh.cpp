@@ -8,15 +8,23 @@
 namespace BVH {
 
     BVH::BVH(const std::vector<Triangle> &tris) : tris(tris) {
-        root = new Node(this->tris.begin(), this->tris.end());
+        preallocated_nodes = new Node[2 * tris.size()];
+
+        root = new_node(this->tris.begin(), this->tris.end());
         subdivide((Node *) root);
         assert(count_leaf_triangles((Node *) root) == tris.size());
     }
 
     BVH::~BVH() {
-        if (root) {
-            free_tree((Node *) root);
-        }
+        delete[] preallocated_nodes;
+    }
+
+    Node* BVH::new_node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end) {
+        assert(num_used_nodes < (2 * tris.size()));
+        Node* node = preallocated_nodes + (num_used_nodes++);
+        node->begin = begin;
+        node->end = end;
+        return node;
     }
 
     bool BVH::does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const {

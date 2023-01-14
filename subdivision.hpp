@@ -10,7 +10,7 @@
 
 namespace BVH {
 
-    void subdivide(Node *parent) {
+    void BVH::subdivide(Node *parent) {
         auto begin = parent->begin;
         auto end = parent->end;
 
@@ -69,8 +69,8 @@ namespace BVH {
             return;
         }
 
-        Node *left = new Node(begin, middle);
-        Node *right = new Node(middle, end);
+        Node *left = new_node(begin, middle);
+        Node *right = new_node(middle, end);
 
         parent->left = left;
         parent->right = right;

@@ -23,6 +23,8 @@ namespace BVH {
         Node *left = nullptr, *right = nullptr;
         AABB aabb;
 
+        Node() = default;
+
         Node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end) {
             this->begin = begin;
             this->end = end;
@@ -40,6 +42,11 @@ namespace BVH {
     private:
         std::vector<Triangle> tris;
         Node *root = nullptr;
+        Node* preallocated_nodes = nullptr;
+        int num_used_nodes = 0;
+
+        Node* new_node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end);
+        void subdivide(Node*);
 
     public:
         explicit BVH(const std::vector<Triangle> &tris);
