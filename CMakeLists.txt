@@ -17,7 +17,7 @@ find_package(SDL2 REQUIRED)
 FETCHCONTENT_DECLARE(
         tiny_stl
         GIT_REPOSITORY https://github.com/iyadahmed/tiny_stl.git
-        GIT_TAG dee148c1af0629b47daed11d984ffcbd93df2a6a
+        GIT_TAG bd01cd8c5fc9aaaa24a22ec7c5c8b980440325e1
         GIT_SHALLOW ON
         GIT_PROGRESS TRUE
 )
