@@ -18,7 +18,6 @@ FETCHCONTENT_DECLARE(
         tiny_stl
         GIT_REPOSITORY https://github.com/iyadahmed/tiny_stl.git
         GIT_TAG bd01cd8c5fc9aaaa24a22ec7c5c8b980440325e1
-        GIT_SHALLOW ON
         GIT_PROGRESS TRUE
 )
 FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
