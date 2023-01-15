@@ -42,6 +42,12 @@ namespace BVH {
         }
         Vector4 variance = mean_of_squares - mean * mean;
 
+        Vector4 plane_normal = variance.normalized3();
+        Vector4 plane_point = mean;
+
+        parent->plane_normal = plane_normal;
+        parent->plane_point = plane_point;
+
         // Expand bounding box by an epsilon;
         // fixes an issue where rays that are tangent to the bounding box miss,
         // hopefully this does not strike back and need extra margins in the future,
@@ -61,8 +67,9 @@ namespace BVH {
 
         float split_pos = mean[split_axis];
 
-        auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle &t) {
-            return t.calc_centroid()[split_axis] < split_pos;
+        auto middle = std::partition(begin, end, [plane_normal, plane_point](const Triangle &t) {
+            //return t.calc_centroid()[split_axis] < split_pos;
+            return (t.calc_centroid() - plane_point).normalized3().dot3(plane_normal) < 0;
         });
 
         if ((middle == begin) || (middle == end)) {

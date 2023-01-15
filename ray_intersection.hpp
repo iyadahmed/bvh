@@ -96,4 +96,53 @@ namespace BVH {
         }
     }
 
+    void intersect_ray_bsp(Ray &ray, Node *node) {
+        if (node == nullptr) {
+            return;
+        }
+
+        if (node->is_leaf()) {
+            for (auto it = node->begin; it != node->end; ++it) {
+                intersect_ray_triangle(ray, *it);
+            }
+        } else {
+            float ray_dot_normal = ray.get_direction().dot3(node->plane_normal);
+            float point_dot_normal = (ray.get_origin() - node->plane_point).normalized3().dot3(node->plane_normal);
+
+            if (ray_dot_normal > 0) {
+                intersect_ray_bsp(ray, node->left);
+            } else if (ray_dot_normal < 0 ) {
+                intersect_ray_bsp(ray, node->right);
+            }
+            //else {
+            //    intersect_ray_bsp(ray, node->left);
+            //    intersect_ray_bsp(ray, node->right);
+            //}
+        }
+    }
+
+    void intersect_edge_bsp(Vector4 a, Vector4 b, Node* node) {
+      if (node == nullptr) {
+        return;
+      }
+
+      if (node->is_leaf()) {
+      
+      } else {
+        float a_dot_normal =
+            (a - node->plane_point).normalized3().dot3(node->plane_normal);
+        float b_dot_normal =
+            (b - node->plane_point).normalized3().dot3(node->plane_normal);
+
+        if (a_dot_normal < 0 && b_dot_normal < 0) {
+          intersect_edge_bsp(a, b, node->left);
+        } else if (a_dot_normal > 0 && b_dot_normal > 0) {
+          intersect_edge_bsp(a, b, node->right);
+        } else {
+          intersect_edge_bsp(a, b, node->left);
+          intersect_edge_bsp(a, b, node->right);
+        }
+      }
+    }
+
 }

@@ -22,6 +22,7 @@ namespace BVH {
         std::vector<Triangle>::iterator begin, end;
         Node *left = nullptr, *right = nullptr;
         AABB aabb;
+        Vector4 plane_normal, plane_point;
 
         Node() = default;
 
