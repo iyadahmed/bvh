@@ -36,9 +36,9 @@ namespace BVH {
                 lower = lower.min(vertex);
             }
 
-            Vector4 tc = it->calc_centroid();
-            mean = mean + tc / num_tris;
-            mean_of_squares = mean_of_squares + (tc * tc) / num_tris;
+            Vector4 triangle_center = it->calc_centroid();
+            mean = mean + triangle_center / num_tris;
+            mean_of_squares = mean_of_squares + (triangle_center * triangle_center) / num_tris;
         }
         Vector4 variance = mean_of_squares - mean * mean;
 
