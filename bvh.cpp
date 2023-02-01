@@ -35,13 +35,8 @@ namespace BVH {
     }
 
     void BVH::print_stats() const {
-        int num_leaf_nodes = count_leaf_nodes((Node *) root);
-        int quality = (num_leaf_nodes * 100) / tris.size();
-        std::cout << "Number of BVH triangles = " << tris.size() << std::endl;
-        std::cout
-                << "Number of reachable triangles (should be equal to the number of BVH triangles, otherwise it means triangles were lost when building the BVH somehow) = "
-                << count_leaf_triangles((Node *) root) << std::endl;
-        std::cout << "BVH Tree quality (n. leaf nodes / n. triangles) = " << quality << "%" << std::endl;
+        std::cout << "Num. BVH triangles = " << tris.size() << std::endl;
+        std::cout << "Num. BVH leaf nodes = " << count_leaf_nodes((Node *) root) << std::endl;
     }
 
 }
