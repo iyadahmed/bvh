@@ -28,7 +28,8 @@ FETCHCONTENT_DECLARE(
 FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
 
 add_library(BVH "bvh.cpp" "bvh.hpp" "subdivision.hpp" "ray_intersection.hpp" "utils.hpp")
+find_package(OpenMP REQUIRED)
 add_executable(main "main.cpp" "camera.hpp" "main.hpp")
 # Note: SDL2::SDL2main has to come before SDL2::SDL2
 # https://github.com/msys2/MINGW-packages/issues/10459#issuecomment-1003700201
-target_link_libraries(main tiny_stl BVH SDL2::SDL2main SDL2::SDL2-static)
+target_link_libraries(main tiny_stl BVH SDL2::SDL2main SDL2::SDL2-static OpenMP::OpenMP_CXX)
