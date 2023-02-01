@@ -74,7 +74,8 @@ namespace BVH {
         float t_min = t_min_v.max_elem3();
         float t_max = t_max_v.min_elem3();
 
-        return (t_max >= t_min && t_min < ray.get_t() && t_max > 0);
+//        return (t_max >= t_min && t_min < ray.get_t() && t_max > 0);
+        return t_max > t_min;
     }
 
     void intersect_ray_bvh(Ray &ray, Node *node) {
