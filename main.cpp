@@ -23,7 +23,6 @@ struct Color {
 };
 
 static void render(Color *pixels, const BVH::BVH &bvh, int width, int height) {
-
     float fov = cam.get_fov();
     float d = std::tan(fov / 2);
     Vector4 cam_pos = cam.get_pos();
@@ -114,8 +113,9 @@ int main(int argc, char *argv[]) {
                     cam.rotate(dx * ROTATION_SPEED, dy * ROTATION_SPEED);
                     break;
                 case SDL_KEYDOWN:
-                    if (event.key.keysym.sym == SDLK_ESCAPE) { is_running = false; }
-                    else if (event.key.keysym.sym == SDLK_w) {
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        is_running = false;
+                    } else if (event.key.keysym.sym == SDLK_w) {
                         cam.move(forward * MOVEMENT_SPEED);
                     } else if (event.key.keysym.sym == SDLK_s) {
                         cam.move(forward * MOVEMENT_SPEED * -1);
