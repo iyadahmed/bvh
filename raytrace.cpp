@@ -9,7 +9,7 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 #include "camera.hpp"
-#include "main.hpp"
+#include "raytrace.hpp"
 
 constexpr int WINDOW_WIDTH = 640;
 constexpr int WINDOW_HEIGHT = 640;
