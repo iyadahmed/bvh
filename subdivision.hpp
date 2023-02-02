@@ -10,7 +10,7 @@
 
 namespace BVH {
 
-    void BVH::subdivide(Node *parent) {
+    void BVH::subdivide(Node *parent, float aabb_expansion) {
         auto begin = parent->begin;
         auto end = parent->end;
 
@@ -42,12 +42,11 @@ namespace BVH {
         }
         Vector4 variance = mean_of_squares - mean * mean;
 
-        // Expand bounding box by an epsilon;
-        // fixes an issue where rays that are tangent to the bounding box miss,
-        // hopefully this does not strike back and need extra margins in the future,
-        // P.S.: this is probably related to numeric precision of intrinsics and order of floating-point operations
-        upper = upper + Vector4(std::numeric_limits<float>::epsilon());
-        lower = lower - Vector4(std::numeric_limits<float>::epsilon());
+        // Expand bounding box by some value,
+        // this helps increase the robustness of queries
+        // (e.g. tangent rays or very thin bounding boxes)
+        upper = upper + Vector4(aabb_expansion);
+        lower = lower - Vector4(aabb_expansion);
 
         int split_axis = 0;
 
@@ -75,8 +74,8 @@ namespace BVH {
         parent->left = left;
         parent->right = right;
 
-        subdivide(left);
-        subdivide(right);
+        subdivide(left, aabb_expansion);
+        subdivide(right, aabb_expansion);
     }
 
 }

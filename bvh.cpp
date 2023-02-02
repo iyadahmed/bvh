@@ -7,11 +7,11 @@
 
 namespace BVH {
 
-    BVH::BVH(const std::vector<Triangle> &tris) : tris(tris) {
+    BVH::BVH(const std::vector<Triangle> &tris, float aabb_expansion) : tris(tris) {
         preallocated_nodes = new Node[2 * tris.size()];
 
         root = new_node(this->tris.begin(), this->tris.end());
-        subdivide((Node *) root);
+        subdivide((Node *) root, aabb_expansion);
         assert(count_leaf_triangles((Node *) root) == tris.size());
     }
 

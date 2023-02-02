@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     const char *filepath = argv[1];
     std::vector<BVH::Triangle> tris = load_bvh_tris_from_mesh_file(filepath);
     std::cout << "Loaded " << tris.size() << " triangles from " << filepath << std::endl;
-    BVH::BVH bvh(tris);
+    BVH::BVH bvh(tris, 0.001f);
     bvh.print_stats();
 
     SDL_Event event;

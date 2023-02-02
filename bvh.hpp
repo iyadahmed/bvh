@@ -46,10 +46,10 @@ namespace BVH {
         int num_used_nodes = 0;
 
         Node* new_node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end);
-        void subdivide(Node*);
+        void subdivide(Node*, float);
 
     public:
-        explicit BVH(const std::vector<Triangle> &tris);
+        explicit BVH(const std::vector<Triangle> &tris, float aabb_expansion);
 
         ~BVH();
 
