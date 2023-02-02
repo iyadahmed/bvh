@@ -8,7 +8,7 @@
 #include "bvh.hpp"
 #include "tiny_stl.hpp"
 
-std::vector<BVH::Triangle> bvh_tris_from_tri_file(const char *filepath) {
+std::vector<BVH::Triangle> bvh_tris_from_tri_file(const char *filepath, float scale) {
     std::vector<BVH::Triangle> tris;
     FILE *file = fopen(filepath, "r");
     if (file == NULL) {
@@ -21,13 +21,16 @@ std::vector<BVH::Triangle> bvh_tris_from_tri_file(const char *filepath) {
         Vector4 v1(a, b, c);
         Vector4 v2(d, e, f);
         Vector4 v3(g, h, i);
+        v1 = v1 * scale;
+        v2 = v2 * scale;
+        v3 = v3 * scale;
         tris.push_back({v1, v2, v3});
     }
     fclose(file);
     return tris;
 }
 
-std::vector<BVH::Triangle> bvh_tris_from_stl_file(const char *filepath) {
+std::vector<BVH::Triangle> bvh_tris_from_stl_file(const char *filepath, float scale) {
     auto reader = Tiny_STL::create_reader(filepath);
     std::vector<BVH::Triangle> tris;
     Tiny_STL::Triangle t;
@@ -35,7 +38,7 @@ std::vector<BVH::Triangle> bvh_tris_from_stl_file(const char *filepath) {
     while (reader->read_next_triangle(&t)) {
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
-                bt.vertices[i][j] = t.vertices[i][j];
+                bt.vertices[i][j] = t.vertices[i][j] * scale;
             }
         }
         tris.push_back(bt);
@@ -60,11 +63,11 @@ bool ends_with(const std::string &str, const std::string &suffix) {
 }
 
 // Supports .stl and .tri files
-std::vector<BVH::Triangle> load_bvh_tris_from_mesh_file(const std::string &filepath) {
+std::vector<BVH::Triangle> load_bvh_tris_from_mesh_file(const std::string &filepath, float scale) {
     if (ends_with(filepath, ".stl")) {
-        return bvh_tris_from_stl_file(filepath.c_str());
+        return bvh_tris_from_stl_file(filepath.c_str(), scale);
     } else if (ends_with(filepath, ".tri")) {
-        return bvh_tris_from_tri_file(filepath.c_str());
+        return bvh_tris_from_tri_file(filepath.c_str(), scale);
     } else {
         throw std::runtime_error("Unrecognized file extension");
     }
