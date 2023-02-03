@@ -2,12 +2,15 @@
 
 #include "vec4.hpp"
 
-class Camera {
+class Camera
+{
 private:
     Vector4 pos, up, right, forward;
     float fov, pitch, yaw;
+
 public:
-    Camera(Vector4 pos, Vector4 target) {
+    Camera(Vector4 pos, Vector4 target)
+    {
         forward = (target - pos).normalized3();
         Vector4 global_up(0, 0, 1);
         right = global_up.cross3(forward).normalized3();
@@ -19,7 +22,8 @@ public:
         yaw = 0.0f;
     }
 
-    void calc_vectors(Vector4 *p_up, Vector4 *p_right, Vector4 *p_forward) const {
+    void calc_vectors(Vector4 *p_up, Vector4 *p_right, Vector4 *p_forward) const
+    {
         // Calculate new up and right vectors based on yaw
         Vector4 new_forward = right * std::sin(yaw) + forward * std::cos(yaw);
         Vector4 new_right = new_forward.cross3(up);
@@ -32,20 +36,24 @@ public:
         *p_right = new_right;
     }
 
-    float get_fov() const {
+    float get_fov() const
+    {
         return fov;
     }
 
-    Vector4 get_pos() const {
+    Vector4 get_pos() const
+    {
         return pos;
     }
 
-    void rotate(float d_yaw, float d_pitch) {
+    void rotate(float d_yaw, float d_pitch)
+    {
         yaw -= d_yaw;
         pitch += d_pitch;
     }
 
-    void move(Vector4 vector) {
+    void move(Vector4 vector)
+    {
         pos = pos + vector;
     }
 };

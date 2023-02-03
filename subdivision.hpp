@@ -8,9 +8,11 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 
-namespace BVH {
+namespace BVH
+{
 
-    void BVH::subdivide(Node *parent, float aabb_expansion) {
+    void BVH::subdivide(Node *parent, float aabb_expansion)
+    {
         auto begin = parent->begin;
         auto end = parent->end;
 
@@ -30,8 +32,10 @@ namespace BVH {
         Vector4 mean_of_squares(0.0f);
         long num_tris = std::distance(begin, end);
         assert(num_tris > 0);
-        for (auto it = begin; it != end; ++it) {
-            for (auto vertex : it->vertices) {
+        for (auto it = begin; it != end; ++it)
+        {
+            for (auto vertex : it->vertices)
+            {
                 upper = upper.max(vertex);
                 lower = lower.min(vertex);
             }
@@ -50,21 +54,23 @@ namespace BVH {
 
         int split_axis = 0;
 
-        if (variance[1] > variance[0]) {
+        if (variance[1] > variance[0])
+        {
             split_axis = 1;
         }
 
-        if (variance[2] > variance[split_axis]) {
+        if (variance[2] > variance[split_axis])
+        {
             split_axis = 2;
         }
 
         float split_pos = mean[split_axis];
 
-        auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle &t) {
-            return t.calc_centroid()[split_axis] < split_pos;
-        });
+        auto middle = std::partition(begin, end, [split_axis, split_pos](const Triangle &t)
+                                     { return t.calc_centroid()[split_axis] < split_pos; });
 
-        if ((middle == begin) || (middle == end)) {
+        if ((middle == begin) || (middle == end))
+        {
             return;
         }
 

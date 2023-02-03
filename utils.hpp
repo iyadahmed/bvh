@@ -2,17 +2,20 @@
 
 #include "bvh.hpp"
 
-namespace BVH {
+namespace BVH
+{
 
-    int count_nodes(Node *node) {
+    int count_nodes(Node *node)
+    {
         if (node == nullptr)
             return 0;
 
         return 1 + count_nodes(node->left) + count_nodes(node->right);
     }
 
-// https://stackoverflow.com/a/9181223/8094047
-    void free_tree(Node *node) {
+    // https://stackoverflow.com/a/9181223/8094047
+    void free_tree(Node *node)
+    {
         if (node == nullptr)
             return;
 
@@ -22,22 +25,34 @@ namespace BVH {
         delete node;
     }
 
-    int count_leaf_triangles(Node *node) {
-        if (node == nullptr) {
+    int count_leaf_triangles(Node *node)
+    {
+        if (node == nullptr)
+        {
             return 0;
-        } else if (node->is_leaf()) {
+        }
+        else if (node->is_leaf())
+        {
             return std::abs(std::distance(node->begin, node->end));
-        } else {
+        }
+        else
+        {
             return count_leaf_triangles(node->left) + count_leaf_triangles(node->right);
         }
     }
 
-    int count_leaf_nodes(Node *node) {
-        if (node == nullptr) {
+    int count_leaf_nodes(Node *node)
+    {
+        if (node == nullptr)
+        {
             return 0;
-        } else if (node->is_leaf()) {
+        }
+        else if (node->is_leaf())
+        {
             return 1;
-        } else {
+        }
+        else
+        {
             return count_leaf_nodes(node->left) + count_leaf_nodes(node->right);
         }
     }

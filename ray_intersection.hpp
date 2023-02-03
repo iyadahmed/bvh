@@ -5,44 +5,52 @@
 #include "bvh.hpp"
 #include "vec4.hpp"
 
+namespace BVH
+{
 
-namespace BVH {
-
-    struct Ray {
+    struct Ray
+    {
     private:
         Vector4 m_origin, m_direction, m_reciprocal_direction;
         float m_t;
 
     public:
-        Ray(Vector4 origin, Vector4 direction) {
+        Ray(Vector4 origin, Vector4 direction)
+        {
             m_origin = origin;
             m_direction = direction;
             m_reciprocal_direction = 1.0f / direction;
             m_t = std::numeric_limits<float>::max();
         }
 
-        Vector4 get_reciprocal_direction() const {
+        Vector4 get_reciprocal_direction() const
+        {
             return m_reciprocal_direction;
         }
 
-        Vector4 get_direction() const {
+        Vector4 get_direction() const
+        {
             return m_direction;
         }
 
-        Vector4 get_origin() const {
+        Vector4 get_origin() const
+        {
             return m_origin;
         }
 
-        float get_t() const {
+        float get_t() const
+        {
             return m_t;
         }
 
-        void set_t(float t) {
+        void set_t(float t)
+        {
             this->m_t = t;
         }
     };
 
-    void intersect_ray_triangle(Ray &ray, const Triangle &tri) {
+    void intersect_ray_triangle(Ray &ray, const Triangle &tri)
+    {
         constexpr float EPSILON = 0.0f;
         const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
         const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
@@ -60,12 +68,14 @@ namespace BVH {
         if (v < 0 || u + v > 1)
             return;
         const float t = f * edge2.dot3(q);
-        if (t > EPSILON) {
+        if (t > EPSILON)
+        {
             ray.set_t(std::min(ray.get_t(), t));
         }
     }
 
-    bool intersect_ray_aabb(const Ray &ray, const AABB &aabb) {
+    bool intersect_ray_aabb(const Ray &ray, const AABB &aabb)
+    {
         Vector4 t_upper = (aabb.upper - ray.get_origin()) * ray.get_reciprocal_direction();
         Vector4 t_lower = (aabb.lower - ray.get_origin()) * ray.get_reciprocal_direction();
         Vector4 t_min_v = t_upper.min(t_lower);
@@ -74,24 +84,31 @@ namespace BVH {
         float t_min = t_min_v.max_elem3();
         float t_max = t_max_v.min_elem3();
 
-//        return (t_max >= t_min && t_min < ray.get_t() && t_max > 0);
+        // return (t_max >= t_min && t_min < ray.get_t() && t_max > 0);
         return t_max > t_min;
     }
 
-    void intersect_ray_bvh(Ray &ray, Node *node) {
-        if (node == nullptr) {
+    void intersect_ray_bvh(Ray &ray, Node *node)
+    {
+        if (node == nullptr)
+        {
             return;
         }
 
-        if (!intersect_ray_aabb(ray, node->aabb)) {
+        if (!intersect_ray_aabb(ray, node->aabb))
+        {
             return;
         }
 
-        if (node->is_leaf()) {
-            for (auto it = node->begin; it != node->end; ++it) {
+        if (node->is_leaf())
+        {
+            for (auto it = node->begin; it != node->end; ++it)
+            {
                 intersect_ray_triangle(ray, *it);
             }
-        } else {
+        }
+        else
+        {
             intersect_ray_bvh(ray, node->left);
             intersect_ray_bvh(ray, node->right);
         }
