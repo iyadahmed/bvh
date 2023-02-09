@@ -5,7 +5,7 @@ Implementation of Bounding Volume Hierarchy algorithm in C++ using variance metr
 Stanford_Bunny.stl license:
 By Makerbot - https://thingiverse.com/thing:88208/files, CC BY 3.0, https://commons.wikimedia.org/w/index.php?curid=86235456
 
-# How to run
+## How to run
 note: CMake configure step needs an internet connection for now
 1. clone the repo: `git clone https://github.com/iyadahmed/bvh.git`
 2. build and run:
