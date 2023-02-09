@@ -26,7 +26,7 @@ struct Color
 static void render(Color *pixels, const BVH::BVH &bvh, int width, int height)
 {
     float fov = cam.get_fov();
-    float d = std::tan(fov / 2);
+    float tan_half_fov = std::tan(fov / 2);
     Vector4 cam_pos = cam.get_pos();
     Vector4 up;
     Vector4 right;
@@ -44,18 +44,19 @@ static void render(Color *pixels, const BVH::BVH &bvh, int width, int height)
     }
 
     auto t1 = std::chrono::high_resolution_clock::now();
-#pragma omp parallel for default(none) firstprivate(aspect_ratio, width, height, cam_pos, forward, right, d, up) shared(bvh, pixels)
+#pragma omp parallel for default(none) firstprivate(aspect_ratio, width, height, cam_pos, forward, right, tan_half_fov, up) shared(bvh, pixels)
     for (int i = 0; i < width * height; i++)
     {
-        int x = i % width;
-        int y = i / width;
-        float xn = x / (float)width;
-        xn = 2 * xn - 1;
-        xn *= aspect_ratio;
-        float yn = y / (float)height;
-        yn = 1 - 2 * yn;
+        int pixel_x = i % width;
+        int pixel_y = i / width;
+        float pixel_x_normalized = pixel_x / (float)width;
+        float pixel_y_normalized = pixel_y / (float)height;
 
-        Vector4 pixel_pos = cam_pos + forward + right * d * xn + up * d * yn;
+        pixel_x_normalized = 2 * pixel_x_normalized - 1;
+        pixel_x_normalized *= aspect_ratio;
+        pixel_y_normalized = 1 - 2 * pixel_y_normalized;
+
+        Vector4 pixel_pos = cam_pos + forward + right * tan_half_fov * pixel_x_normalized + up * tan_half_fov * pixel_y_normalized;
 
         Vector4 ray_origin = cam_pos;
         Vector4 ray_direction = (pixel_pos - cam_pos).normalized3();
@@ -65,13 +66,13 @@ static void render(Color *pixels, const BVH::BVH &bvh, int width, int height)
         {
             // Map t from [0, inf[ to [0, 1[
             // https://math.stackexchange.com/a/3200751/691043
-            float tr = std::atan(t) / (3.14 / 2);
-            unsigned char c = (tr * tr) * 255;
-            pixels[x + y * width] = {255, c, c, c};
+            float t_normalized = std::atan(t) / (3.14 / 2);
+            unsigned char pixel_color = (t_normalized * t_normalized) * 255;
+            pixels[pixel_x + pixel_y * width] = {255, pixel_color, pixel_color, pixel_color};
         }
         else
         {
-            pixels[x + y * width] = {255, 0, 0, 0};
+            pixels[pixel_x + pixel_y * width] = {255, 0, 0, 0};
         }
     }
     auto t2 = std::chrono::high_resolution_clock::now();
