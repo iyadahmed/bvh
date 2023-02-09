@@ -13,7 +13,7 @@ note: CMake configure step needs an internet connection for now
 cd bvh
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake .. -DCMAKE_BUILD_TYPE=Release -DUSE_SYSTEM_SDL=OFF
 cmake --build . --config Release
 ./raytrace ../Stanford_Bunny.stl
 ```
