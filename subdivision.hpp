@@ -46,7 +46,7 @@ namespace BVH
         }
         Vector4 variance = mean_of_squares - mean * mean;
 
-        // Expand bounding box by some value,
+        // Set and expand bounding box by some value,
         // this helps increase the robustness of queries
         // (e.g. tangent rays or very thin bounding boxes)
         upper = upper + Vector4(aabb_expansion);
