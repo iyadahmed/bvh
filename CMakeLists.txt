@@ -5,7 +5,7 @@ project(BVHDemos)
 include(FetchContent)
 Set(FETCHCONTENT_QUIET FALSE)
 
-option(USE_SYSTEM_SDL "" ON)
+option(USE_SYSTEM_SDL "Use system provided SDL2 instead of downloading and compiling SDL2 from source" ON)
 
 if(USE_SYSTEM_SDL)
     find_package(SDL2 REQUIRED)
@@ -28,10 +28,11 @@ FETCHCONTENT_DECLARE(
 )
 FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
 
-add_library(BVH "bvh.cpp" "bvh.hpp" "subdivision.hpp" "ray_intersection.hpp" "utils.hpp")
 find_package(OpenMP REQUIRED)
+
+add_library(bvh "bvh.cpp" "bvh.hpp" "subdivision.hpp" "ray_intersection.hpp" "utils.hpp")
 add_executable(raytrace "raytrace.cpp" "camera.hpp" "raytrace.hpp")
 
 # Note: SDL2::SDL2main has to come before SDL2::SDL2
 # https://github.com/msys2/MINGW-packages/issues/10459#issuecomment-1003700201
-target_link_libraries(raytrace tiny_stl BVH SDL2::SDL2main SDL2::SDL2-static OpenMP::OpenMP_CXX)
+target_link_libraries(raytrace tiny_stl bvh SDL2::SDL2main SDL2::SDL2-static OpenMP::OpenMP_CXX)
