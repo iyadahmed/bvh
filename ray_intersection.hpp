@@ -74,6 +74,40 @@ namespace BVH
         }
     }
 
+    bool is_point_behind_plane(const Vector4 &point, const Vector4 &plane_normal, const Vector4 &plane_point)
+    {
+        return plane_normal.dot3(point - plane_point) > 0;
+    }
+
+    void intersect_ray_triangle_2(Ray &ray, const Triangle &tri)
+    {
+        Vector4 e1 = tri.vertices[1] - tri.vertices[0];
+        Vector4 e2 = tri.vertices[2] - tri.vertices[1];
+        Vector4 e3 = tri.vertices[0] - tri.vertices[2];
+        Vector4 normal = e2.cross3(e3);
+        Vector4 p1_n = normal.cross3(e1);
+        Vector4 p2_n = normal.cross3(e2);
+        Vector4 p3_n = normal.cross3(e3);
+
+        float denom = ray.get_direction().dot3(normal);
+        if (std::abs(denom) <= 0)
+        {
+            return;
+        }
+        float t = (tri.vertices[0] - ray.get_origin()).dot3(normal) / denom;
+        if (t < 0)
+        {
+            return;
+        }
+        Vector4 p = t * ray.get_direction() + ray.get_origin();
+        if (is_point_behind_plane(p, p1_n, tri.vertices[0]) &&
+            is_point_behind_plane(p, p2_n, tri.vertices[1]) &&
+            is_point_behind_plane(p, p3_n, tri.vertices[2]))
+        {
+            ray.set_t(std::min(ray.get_t(), t));
+        }
+    }
+
     bool intersect_ray_aabb(const Ray &ray, const AABB &aabb)
     {
         Vector4 t_upper = (aabb.upper - ray.get_origin()) * ray.get_reciprocal_direction();
@@ -104,7 +138,7 @@ namespace BVH
         {
             for (auto it = node->begin; it != node->end; ++it)
             {
-                intersect_ray_triangle(ray, *it);
+                intersect_ray_triangle_2(ray, *it);
             }
         }
         else

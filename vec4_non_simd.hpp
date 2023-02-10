@@ -110,3 +110,8 @@ static Vector4 operator/(const float &rhs, const Vector4 &lhs)
 {
     return {rhs / lhs.x, rhs / lhs.y, rhs / lhs.z};
 }
+
+static Vector4 operator*(const float &rhs, const Vector4 &lhs)
+{
+    return {rhs * lhs.x, rhs * lhs.y, rhs * lhs.z};
+}
