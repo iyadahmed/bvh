@@ -4,6 +4,7 @@
 
 #include "bvh.hpp"
 #include "vec4.hpp"
+#include "utils.hpp"
 
 namespace BVH
 {
@@ -74,24 +75,22 @@ namespace BVH
         }
     }
 
-    bool is_point_behind_plane(const Vector4 &point, const Vector4 &plane_normal, const Vector4 &plane_point)
-    {
-        return plane_normal.dot3(point - plane_point) > 0;
-    }
-
     void intersect_ray_triangle_2(Ray &ray, const Triangle &tri)
     {
+        constexpr float COPLANAR_THRESHOLD = 0.00001;
         Vector4 e1 = tri.vertices[1] - tri.vertices[0];
         Vector4 e2 = tri.vertices[2] - tri.vertices[1];
         Vector4 e3 = tri.vertices[0] - tri.vertices[2];
-        Vector4 normal = e2.cross3(e3);
+        Vector4 normal = e2.cross3(e3).normalized3(); // normalizing is very important for comparing thresholds later
         Vector4 p1_n = normal.cross3(e1);
         Vector4 p2_n = normal.cross3(e2);
         Vector4 p3_n = normal.cross3(e3);
 
         float denom = ray.get_direction().dot3(normal);
-        if (std::abs(denom) <= 0)
+        if (std::abs(denom) <= COPLANAR_THRESHOLD)
         {
+            // TODO:    handle coplanar case by intersecting segment/ray with
+            //          the 3 planes that define the triangle
             return;
         }
         float t = (tri.vertices[0] - ray.get_origin()).dot3(normal) / denom;

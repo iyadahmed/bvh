@@ -57,4 +57,9 @@ namespace BVH
         }
     }
 
+    bool is_point_behind_plane(const Vector4 &point, const Vector4 &plane_normal, const Vector4 &plane_point)
+    {
+        return plane_normal.dot3(point - plane_point) > 0;
+    }
+
 }
