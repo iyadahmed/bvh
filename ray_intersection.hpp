@@ -3,8 +3,8 @@
 #include <limits>
 
 #include "bvh.hpp"
-#include "vec4.hpp"
 #include "utils.hpp"
+#include "vec4.hpp"
 
 namespace BVH
 {
@@ -51,31 +51,6 @@ namespace BVH
     };
 
     void intersect_ray_triangle(Ray &ray, const Triangle &tri)
-    {
-        constexpr float EPSILON = 0.0f;
-        const Vector4 edge1 = tri.vertices[1] - tri.vertices[0];
-        const Vector4 edge2 = tri.vertices[2] - tri.vertices[0];
-        const Vector4 h = ray.get_direction().cross3(edge2);
-        const float a = edge1.dot3(h);
-        if (a > -EPSILON && a < EPSILON)
-            return; // ray parallel to triangle
-        const float f = 1 / a;
-        const Vector4 s = ray.get_origin() - tri.vertices[0];
-        const float u = f * s.dot3(h);
-        if (u < 0 || u > 1)
-            return;
-        const Vector4 q = s.cross3(edge1);
-        const float v = f * ray.get_direction().dot3(q);
-        if (v < 0 || u + v > 1)
-            return;
-        const float t = f * edge2.dot3(q);
-        if (t > EPSILON)
-        {
-            ray.set_t(std::min(ray.get_t(), t));
-        }
-    }
-
-    void intersect_ray_triangle_2(Ray &ray, const Triangle &tri)
     {
         constexpr float COPLANAR_THRESHOLD = 0.00001;
         Vector4 e1 = tri.vertices[1] - tri.vertices[0];
@@ -137,7 +112,7 @@ namespace BVH
         {
             for (auto it = node->begin; it != node->end; ++it)
             {
-                intersect_ray_triangle_2(ray, *it);
+                intersect_ray_triangle(ray, *it);
             }
         }
         else
