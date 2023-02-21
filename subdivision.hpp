@@ -21,8 +21,7 @@ namespace BVH
         Vector4 &upper = parent->aabb.upper;
         Vector4 &lower = parent->aabb.lower;
 
-        upper = Vector4(-1 * std::numeric_limits<float>::infinity());
-        lower = Vector4(std::numeric_limits<float>::infinity());
+        lower = upper = begin->vertices[0];
 
         // Calculate variance to determine split axis based on axis with the largest variance,
         // this produces more balanced trees and overcomes an issue that happens with meshes that contain
