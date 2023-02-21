@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <vector>
 #include <limits>
+#include <vector>
 
 #include "bvh.hpp"
 #include "vec4.hpp"

@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "bvh.hpp"
-#include "vec4.hpp"
 #include "utils.hpp"
+#include "vec4.hpp"
 
 namespace BVH
 {

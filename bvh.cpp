@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "bvh.hpp"
-#include "utils.hpp"
-#include "subdivision.hpp"
 #include "ray_intersection.hpp"
+#include "subdivision.hpp"
+#include "utils.hpp"
 
 namespace BVH
 {

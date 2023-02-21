@@ -7,9 +7,9 @@
 #include <SDL.h>
 
 #include "bvh.hpp"
-#include "vec4.hpp"
 #include "camera.hpp"
 #include "raytrace.hpp"
+#include "vec4.hpp"
 
 constexpr int WINDOW_WIDTH = 640;
 constexpr int WINDOW_HEIGHT = 640;

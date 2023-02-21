@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
 #include <cstdio>
-#include <string>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "bvh.hpp"
 #include "tiny_stl.hpp"
