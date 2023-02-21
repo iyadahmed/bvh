@@ -17,6 +17,8 @@ constexpr float ROTATION_SPEED = .001;
 constexpr float MOVEMENT_SPEED = .1;
 
 Camera cam({0, -2, 0}, {0, 0, 0});
+double total_time_ns = 0.0;
+size_t num_frames = 0;
 
 struct Color
 {
@@ -76,7 +78,10 @@ static void render(Color *pixels, const BVH::AABBTree &bvh, int width, int heigh
         }
     }
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "Rendering took: " << (t2 - t1).count() / 1'000'000 << " milli seconds" << std::endl;
+    auto frame_time_ns = (t2 - t1).count();
+    total_time_ns += frame_time_ns;
+    num_frames++;
+    std::cout << "Rendering took: " << frame_time_ns / 1'000'000 << " milli seconds" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -166,6 +171,8 @@ int main(int argc, char *argv[])
     SDL_DestroyWindow(window);
     SDL_Quit();
     free(pixels);
+
+    std::cout << "Avreage milliseconds per frame = " << (total_time_ns / num_frames) / 1'000'000 << std::endl;
 
     return 0;
 }
