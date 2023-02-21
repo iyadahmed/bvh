@@ -52,6 +52,8 @@ namespace BVH
 
     void intersect_ray_triangle(Ray &ray, const Triangle &tri)
     {
+        // TODO: reduce code duplication,
+        //       same code is repeated in segment/triangle intersection
         constexpr float COPLANAR_THRESHOLD = 0.00001;
         Vector4 e1 = tri.vertices[1] - tri.vertices[0];
         Vector4 e2 = tri.vertices[2] - tri.vertices[1];
