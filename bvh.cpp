@@ -8,7 +8,7 @@
 namespace BVH
 {
 
-    BVH::BVH(const std::vector<Triangle> &tris, float aabb_expansion) : tris(tris)
+    AABBTree::AABBTree(const std::vector<Triangle> &tris, float aabb_expansion) : tris(tris)
     {
         preallocated_nodes = new Node[2 * tris.size()];
 
@@ -17,12 +17,12 @@ namespace BVH
         assert(count_leaf_triangles((Node *)root) == tris.size());
     }
 
-    BVH::~BVH()
+    AABBTree::~AABBTree()
     {
         delete[] preallocated_nodes;
     }
 
-    Node *BVH::new_node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end)
+    Node *AABBTree::new_node(std::vector<Triangle>::iterator begin, std::vector<Triangle>::iterator end)
     {
         assert(num_used_nodes < (2 * tris.size()));
         Node *node = preallocated_nodes + (num_used_nodes++);
@@ -31,7 +31,7 @@ namespace BVH
         return node;
     }
 
-    bool BVH::does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const
+    bool AABBTree::does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const
     {
         Ray ray(origin, direction);
         intersect_ray_bvh(ray, (Node *)root);
@@ -39,7 +39,7 @@ namespace BVH
         return ray.get_t() < std::numeric_limits<float>::max();
     }
 
-    void BVH::print_stats() const
+    void AABBTree::print_stats() const
     {
         std::cout << "Num. BVH triangles = " << tris.size() << std::endl;
         std::cout << "Num. BVH leaf nodes = " << count_leaf_nodes((Node *)root) << std::endl;

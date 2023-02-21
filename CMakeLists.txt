@@ -24,7 +24,7 @@ FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
 
 find_package(OpenMP REQUIRED)
 
-add_library(bvh "bvh.cpp" "bvh.hpp" "subdivision.hpp" "ray_intersection.hpp" "utils.hpp")
+add_library(bvh "bvh.cpp" "bvh.hpp" "subdivision.hpp" "ray_intersection.hpp" "utils.hpp" "non_copyable.hpp")
 add_executable(raytrace "raytrace.cpp" "camera.hpp" "raytrace.hpp")
 
 # Note: SDL2::SDL2main has to come before SDL2::SDL2

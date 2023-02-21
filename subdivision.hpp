@@ -11,7 +11,7 @@
 namespace BVH
 {
 
-    void BVH::subdivide(Node *parent, float aabb_expansion)
+    void AABBTree::subdivide(Node *parent, float aabb_expansion)
     {
         auto begin = parent->begin;
         auto end = parent->end;

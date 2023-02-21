@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "non_copyable.hpp"
 #include "vec4.hpp"
 
 namespace BVH
@@ -44,7 +45,7 @@ namespace BVH
         }
     };
 
-    class BVH
+    class AABBTree : public NonCopyable
     {
 
     private:
@@ -57,18 +58,13 @@ namespace BVH
         void subdivide(Node *, float);
 
     public:
-        explicit BVH(const std::vector<Triangle> &tris, float aabb_expansion);
+        explicit AABBTree(const std::vector<Triangle> &tris, float aabb_expansion);
 
-        ~BVH();
+        ~AABBTree();
 
         bool does_intersect_ray(Vector4 origin, Vector4 direction, float *t_out) const;
 
         void print_stats() const;
-
-        // Make instances non-copyable
-        BVH(const BVH &) = delete;
-
-        BVH &operator=(const BVH &) = delete;
     };
 
 }

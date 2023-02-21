@@ -23,7 +23,7 @@ struct Color
     unsigned char a, b, g, r;
 };
 
-static void render(Color *pixels, const BVH::BVH &bvh, int width, int height)
+static void render(Color *pixels, const BVH::AABBTree &bvh, int width, int height)
 {
     float fov = cam.get_fov();
     float tan_half_fov = std::tan(fov / 2);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     const char *filepath = argv[1];
     std::vector<BVH::Triangle> tris = load_bvh_tris_from_mesh_file(filepath, 0.01f);
     std::cout << "Loaded " << tris.size() << " triangles from " << filepath << std::endl;
-    BVH::BVH bvh(tris, 0.001f);
+    BVH::AABBTree bvh(tris, 0.001f);
     bvh.print_stats();
 
     SDL_Event event;
