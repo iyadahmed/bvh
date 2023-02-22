@@ -76,9 +76,9 @@ namespace BVH
             return;
         }
         Vector4 p = t * ray.get_direction() + ray.get_origin();
-        if (is_point_behind_plane(p, p1_n, tri.vertices[0]) &&
-            is_point_behind_plane(p, p2_n, tri.vertices[1]) &&
-            is_point_behind_plane(p, p3_n, tri.vertices[2]))
+        if (is_point_above_plane(p, p1_n, tri.vertices[0]) &&
+            is_point_above_plane(p, p2_n, tri.vertices[1]) &&
+            is_point_above_plane(p, p3_n, tri.vertices[2]))
         {
             ray.set_t(std::min(ray.get_t(), t));
         }
