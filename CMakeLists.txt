@@ -1,26 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(BVHDemos)
 
-include(FetchContent)
-Set(FETCHCONTENT_QUIET FALSE)
-
-FETCHCONTENT_DECLARE(
-    sdl
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-    GIT_TAG release-2.26.1
-    GIT_SHALLOW ON
-    GIT_PROGRESS TRUE
-)
-FETCHCONTENT_MAKEAVAILABLE(sdl)
-
-FETCHCONTENT_DECLARE(
-    tiny_stl
-    GIT_REPOSITORY https://github.com/iyadahmed/tiny_stl.git
-    GIT_TAG a928bb9ff65bfe0cb0e2335c70abd16e8bdce0d7
-    GIT_PROGRESS TRUE
-)
-FETCHCONTENT_MAKEAVAILABLE(tiny_stl)
+add_subdirectory(extern EXCLUDE_FROM_ALL)
 
 find_package(OpenMP REQUIRED)
 
